@@ -6,6 +6,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.clarkelamothe.echojournal.R
 import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalScaffold
 import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalToolbar
+import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.EchoJournalTheme
 
 @Composable
 fun SettingsScreenRoot(
@@ -43,7 +44,9 @@ fun SettingsScreen(
 @Preview
 @Composable
 private fun SettingsScreenPreview() {
-    SettingsScreen(
-        onAction = {}
-    )
+    EchoJournalTheme {
+        SettingsScreen(
+            onAction = {}
+        )
+    }
 }

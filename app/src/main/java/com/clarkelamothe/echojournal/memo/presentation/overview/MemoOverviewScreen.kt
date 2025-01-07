@@ -17,6 +17,7 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalS
 import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalToolbar
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.AddIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.ButtonGradient
+import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.EchoJournalTheme
 
 @Composable
 fun MemoOverviewScreenRoot(
@@ -82,7 +83,9 @@ fun MemoOverviewScreen(
 @Preview
 @Composable
 private fun MemoOverviewScreenPreview() {
-    MemoOverviewScreen(
-        onAction = {}
-    )
+    EchoJournalTheme {
+        MemoOverviewScreen(
+            onAction = {}
+        )
+    }
 }
