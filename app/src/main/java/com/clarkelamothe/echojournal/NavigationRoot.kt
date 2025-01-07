@@ -11,6 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import com.clarkelamothe.echojournal.memo.presentation.overview.MemoOverviewScreenRoot
 
 @Composable
 fun NavigationRoot(
@@ -24,14 +25,7 @@ fun NavigationRoot(
             startDestination = Routes.MemoOverview
         ) {
             composable<Routes.MemoOverview> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = "Memo List")
-                }
+                MemoOverviewScreenRoot()
             }
 
             composable<Routes.MemoNew> {
