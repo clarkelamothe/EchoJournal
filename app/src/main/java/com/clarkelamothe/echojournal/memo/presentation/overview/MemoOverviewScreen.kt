@@ -8,6 +8,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -55,10 +56,16 @@ fun MemoOverviewScreen(
                 },
                 modifier = Modifier
                     .padding(bottom = 32.dp)
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = CircleShape,
+                        spotColor = MaterialTheme.colorScheme.primary
+                    )
                     .background(
                         brush = ButtonGradient,
                         shape = CircleShape
                     )
+
             ) {
                 Icon(
                     imageVector = AddIcon,
