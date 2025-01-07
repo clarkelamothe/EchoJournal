@@ -1,4 +1,4 @@
-package com.clarkelamothe.echojournal.memo.presentation.overview
+package com.clarkelamothe.echojournal.memo.presentation.create
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
@@ -18,40 +18,25 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.components.i
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.ButtonGradient
 
 @Composable
-fun MemoOverviewScreenRoot(
-    onSettingsClick: () -> Unit
-) {
-    MemoOverviewScreen(
-        onAction = {
-            when (it) {
-                MemoOverviewScreenAction.OnFabClick -> {
-//                    TODO()
-                }
-
-                MemoOverviewScreenAction.OnSettingsClick -> onSettingsClick()
-            }
-        }
-    )
+fun CreateMemoScreenRoot() {
+    CreateMemoScreen()
 }
 
 @Composable
-fun MemoOverviewScreen(
-    onAction: (MemoOverviewScreenAction) -> Unit
-) {
+fun CreateMemoScreen() {
     EchoJournalScaffold(
+        withGradient = false,
         topAppBar = {
             EchoJournalToolbar(
-                title = stringResource(R.string.your_echojournal),
-                showSettingsButton = true,
-                onSettingsClick = {
-                    onAction(MemoOverviewScreenAction.OnSettingsClick)
-                }
+                title = stringResource(R.string.title_create_memo_screen),
+                showSettingsButton = false,
+                showBackButton = true
             )
         },
         floatingActionButton = {
             IconButton(
                 onClick = {
-                    onAction(MemoOverviewScreenAction.OnFabClick)
+
                 },
                 modifier = Modifier
                     .padding(bottom = 32.dp)
@@ -74,8 +59,6 @@ fun MemoOverviewScreen(
 
 @Preview
 @Composable
-private fun MemoOverviewScreenPreview() {
-    MemoOverviewScreen(
-        onAction = {}
-    )
+private fun CreateMemoScreenPreview() {
+    CreateMemoScreen()
 }

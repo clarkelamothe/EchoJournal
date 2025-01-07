@@ -10,7 +10,7 @@ sealed interface Routes {
     data object MemoOverview : Routes
 
     @Serializable
-    data object MemoNew : Routes
+    data object MemoCreate : Routes
 
     @Serializable
     data object Settings : Routes

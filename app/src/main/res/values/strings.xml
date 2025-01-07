@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">EchoJournal</string>
+    <string name="icon_settings_description">Go To Settings</string>
+    <string name="icon_back_description">Go Back</string>
+    <string name="title_create_memo_screen">New Entry</string>
+    <string name="add_a_new_memo">Add a New Memo</string>
+    <string name="settings">Settings</string>
+    <string name="your_echojournal">Your EchoJournal</string>
 </resources>

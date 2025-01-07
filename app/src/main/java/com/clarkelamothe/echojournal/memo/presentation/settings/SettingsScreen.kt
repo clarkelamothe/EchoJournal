@@ -1,4 +1,4 @@
-package com.clarkelamothe.echojournal.memo.presentation.overview
+package com.clarkelamothe.echojournal.memo.presentation.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
@@ -18,40 +18,36 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.components.i
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.ButtonGradient
 
 @Composable
-fun MemoOverviewScreenRoot(
-    onSettingsClick: () -> Unit
+fun SettingsScreenRoot(
+    onBackClick: () -> Unit
 ) {
-    MemoOverviewScreen(
+    SettingsScreen(
         onAction = {
             when (it) {
-                MemoOverviewScreenAction.OnFabClick -> {
-//                    TODO()
-                }
-
-                MemoOverviewScreenAction.OnSettingsClick -> onSettingsClick()
+                SettingsScreenAction.OnBackClick -> onBackClick()
             }
         }
     )
 }
 
 @Composable
-fun MemoOverviewScreen(
-    onAction: (MemoOverviewScreenAction) -> Unit
+fun SettingsScreen(
+    onAction: (SettingsScreenAction) -> Unit
 ) {
     EchoJournalScaffold(
         topAppBar = {
             EchoJournalToolbar(
-                title = stringResource(R.string.your_echojournal),
-                showSettingsButton = true,
-                onSettingsClick = {
-                    onAction(MemoOverviewScreenAction.OnSettingsClick)
+                title = stringResource(R.string.settings),
+                showBackButton = true,
+                onBackClick = {
+                    onAction(SettingsScreenAction.OnBackClick)
                 }
             )
         },
         floatingActionButton = {
             IconButton(
                 onClick = {
-                    onAction(MemoOverviewScreenAction.OnFabClick)
+
                 },
                 modifier = Modifier
                     .padding(bottom = 32.dp)
@@ -62,7 +58,7 @@ fun MemoOverviewScreen(
             ) {
                 Icon(
                     imageVector = AddIcon,
-                    contentDescription = stringResource(R.string.add_a_new_memo),
+                    contentDescription = "Add a New Memo",
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
@@ -74,8 +70,8 @@ fun MemoOverviewScreen(
 
 @Preview
 @Composable
-private fun MemoOverviewScreenPreview() {
-    MemoOverviewScreen(
+private fun SettingsScreenPreview() {
+    SettingsScreen(
         onAction = {}
     )
 }

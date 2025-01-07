@@ -1,17 +1,13 @@
 package com.clarkelamothe.echojournal
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import com.clarkelamothe.echojournal.memo.presentation.create.CreateMemoScreenRoot
 import com.clarkelamothe.echojournal.memo.presentation.overview.MemoOverviewScreenRoot
+import com.clarkelamothe.echojournal.memo.presentation.settings.SettingsScreenRoot
 
 @Composable
 fun NavigationRoot(
@@ -25,29 +21,23 @@ fun NavigationRoot(
             startDestination = Routes.MemoOverview
         ) {
             composable<Routes.MemoOverview> {
-                MemoOverviewScreenRoot()
+                MemoOverviewScreenRoot(
+                    onSettingsClick = {
+                        navController.navigate(Routes.Settings)
+                    }
+                )
             }
 
-            composable<Routes.MemoNew> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = "New Memo")
-                }
+            composable<Routes.MemoCreate> {
+                CreateMemoScreenRoot()
             }
 
             composable<Routes.Settings> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = "Settings")
-                }
+                SettingsScreenRoot(
+                    onBackClick = {
+                        navController.navigateUp()
+                    }
+                )
             }
         }
     }
