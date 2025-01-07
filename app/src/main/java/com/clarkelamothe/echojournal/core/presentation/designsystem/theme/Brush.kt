@@ -4,13 +4,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 val BgGradient = Brush.verticalGradient(
-    colorStops = arrayOf(
-        0.4f to Secondary90,
-        0.4f to Secondary95
+    colors = listOf(
+        Secondary90.copy(alpha = 0.4f),
+        Secondary95.copy(alpha = 0.4f)
     )
 )
 
-val BgSaturatedGradien = Brush.verticalGradient(
+val BgSaturatedGradient = Brush.verticalGradient(
     colors = listOf(
         Secondary90,
         Secondary95
