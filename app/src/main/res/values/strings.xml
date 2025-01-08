@@ -9,4 +9,5 @@
     <string name="your_echojournal">Your EchoJournal</string>
     <string name="add_title">Add Title…</string>
     <string name="add_description">Add Description…</string>
+    <string name="add_topic">Topic</string>
 </resources>
