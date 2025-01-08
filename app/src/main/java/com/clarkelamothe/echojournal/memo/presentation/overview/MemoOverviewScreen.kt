@@ -19,11 +19,18 @@ fun MemoOverviewScreenRoot(
     MemoOverviewScreen(
         onAction = {
             when (it) {
-                MemoOverviewScreenAction.OnFabClick -> {
-//                    TODO()
+                MemoOverviewScreenAction.OnSettingsClick -> onSettingsClick()
+                MemoOverviewScreenAction.OnCancelRecording -> {
+
                 }
 
-                MemoOverviewScreenAction.OnSettingsClick -> onSettingsClick()
+                MemoOverviewScreenAction.OnFinishRecording -> {
+
+                }
+
+                MemoOverviewScreenAction.OnStartRecording -> {
+
+                }
             }
         }
     )
@@ -46,9 +53,15 @@ fun MemoOverviewScreen(
         floatingActionButton = {
             RecordMemoActionButtons(
                 modifier = Modifier.padding(bottom = 40.dp),
-                onStartRecording = {},
-                onCancelRecording = {},
-                onFinishRecording = {}
+                onStartRecording = {
+                    onAction(MemoOverviewScreenAction.OnStartRecording)
+                },
+                onCancelRecording = {
+                    onAction(MemoOverviewScreenAction.OnCancelRecording)
+                },
+                onFinishRecording = {
+                    onAction(MemoOverviewScreenAction.OnFinishRecording)
+                }
             )
         }
     ) {
