@@ -9,19 +9,26 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalT
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.EchoJournalTheme
 
 @Composable
-fun CreateMemoScreenRoot() {
-    CreateMemoScreen()
+fun CreateMemoScreenRoot(
+    onBackClick: () -> Unit
+) {
+    CreateMemoScreen(
+        onBackClick
+    )
 }
 
 @Composable
-fun CreateMemoScreen() {
+fun CreateMemoScreen(
+    onAction: () -> Unit
+) {
     EchoJournalScaffold(
         withGradient = false,
         topAppBar = {
             EchoJournalToolbar(
                 title = stringResource(R.string.title_create_memo_screen),
                 showSettingsButton = false,
-                showBackButton = true
+                showBackButton = true,
+                onBackClick = onAction
             )
         },
         floatingActionButton = {}
@@ -34,6 +41,8 @@ fun CreateMemoScreen() {
 @Composable
 private fun CreateMemoScreenPreview() {
     EchoJournalTheme {
-        CreateMemoScreen()
+        CreateMemoScreen(
+            onAction = {}
+        )
     }
 }

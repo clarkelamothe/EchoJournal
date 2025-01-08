@@ -11,11 +11,20 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalS
 import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalToolbar
 import com.clarkelamothe.echojournal.core.presentation.designsystem.RecordMemoActionButtons
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.EchoJournalTheme
+import com.clarkelamothe.echojournal.core.presentation.ui.ObserveAsEvents
 
 @Composable
 fun MemoOverviewScreenRoot(
-    onSettingsClick: () -> Unit
+    viewModel: MemoOverviewViewModel,
+    onSettingsClick: () -> Unit,
+    onVoiceMemoRecorded: () -> Unit
 ) {
+    ObserveAsEvents(viewModel.events) {
+        when (it) {
+            MemoOverviewEvent.VoiceMemoRecorded -> onVoiceMemoRecorded()
+        }
+    }
+
     MemoOverviewScreen(
         onAction = {
             when (it) {
@@ -24,13 +33,11 @@ fun MemoOverviewScreenRoot(
 
                 }
 
-                MemoOverviewScreenAction.OnFinishRecording -> {
-
-                }
-
                 MemoOverviewScreenAction.OnStartRecording -> {
 
                 }
+
+                else -> viewModel.onAction(it)
             }
         }
     )
