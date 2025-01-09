@@ -1,9 +1,6 @@
 package com.clarkelamothe.echojournal.memo.presentation.overview
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -12,15 +9,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
-import androidx.compose.material3.InputChip
-import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,7 +23,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -39,6 +31,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.clarkelamothe.echojournal.R
 import com.clarkelamothe.echojournal.core.domain.Mood
+import com.clarkelamothe.echojournal.core.presentation.designsystem.DropdownItem
+import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalChip
 import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalScaffold
 import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalToolbar
 import com.clarkelamothe.echojournal.core.presentation.designsystem.MoodIconsRow
@@ -52,7 +46,6 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.components.i
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.SadIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.StressedIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.EchoJournalTheme
-import com.clarkelamothe.echojournal.core.presentation.designsystem.TopicsDropdownMenu
 import com.clarkelamothe.echojournal.core.presentation.ui.ObserveAsEvents
 
 @Composable
@@ -115,8 +108,8 @@ fun MemoOverviewScreen(
             )
         }
     ) { paddingValues ->
-        var isMoodsSelected by remember { mutableStateOf(false) }
-        var isTopicsSelected by remember { mutableStateOf(false) }
+        var isMoodsChipSelected by remember { mutableStateOf(false) }
+        var isTopicsChipSelected by remember { mutableStateOf(false) }
 
         val selectedMoods = remember { mutableStateListOf<Mood>() }
         val initialTopics = remember {
@@ -132,8 +125,7 @@ fun MemoOverviewScreen(
             item(contentType = "Filters") {
                 ExposedDropdownMenuBox(
                     expanded = true,
-                    onExpandedChange = {
-                    }
+                    onExpandedChange = {}
                 ) {
                     FlowRow(
                         modifier = Modifier
@@ -142,11 +134,11 @@ fun MemoOverviewScreen(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         // Moods Chip
-                        InputChip(
-                            selected = isMoodsSelected || selectedMoods.isNotEmpty(),
+                        EchoJournalChip(
+                            selected = isMoodsChipSelected || selectedMoods.isNotEmpty(),
                             onClick = {
-                                isMoodsSelected = !isMoodsSelected
-                                isTopicsSelected = false
+                                isMoodsChipSelected = !isMoodsChipSelected
+                                isTopicsChipSelected = false
                             },
                             label = {
                                 Text(
@@ -177,12 +169,6 @@ fun MemoOverviewScreen(
                                     }
                                 )
                             },
-                            border = BorderStroke(
-                                width = 1.dp,
-                                color = if (isMoodsSelected)
-                                    MaterialTheme.colorScheme.primaryContainer
-                                else MaterialTheme.colorScheme.outlineVariant
-                            ),
                             trailingIcon = {
                                 if (selectedMoods.isNotEmpty() && Mood.entries.size != selectedMoods.size) {
                                     Icon(
@@ -195,23 +181,15 @@ fun MemoOverviewScreen(
                                             }
                                     )
                                 }
-                            },
-                            shape = RoundedCornerShape(16.dp),
-                            colors = InputChipDefaults.inputChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.onPrimary,
-                                containerColor = Color.Transparent,
-                                selectedLeadingIconColor = Color.Unspecified,
-                                selectedTrailingIconColor = Color.Unspecified
-                            )
+                            }
                         )
 
-
                         // Topic Chip
-                        InputChip(
-                            selected = isTopicsSelected || selectedTopics.isNotEmpty(),
+                        EchoJournalChip(
+                            selected = isTopicsChipSelected || selectedTopics.isNotEmpty(),
                             onClick = {
-                                isTopicsSelected = !isTopicsSelected
-                                isMoodsSelected = false
+                                isTopicsChipSelected = !isTopicsChipSelected
+                                isMoodsChipSelected = false
                             },
                             label = {
                                 Text(
@@ -237,13 +215,7 @@ fun MemoOverviewScreen(
                                     textAlign = TextAlign.Center
                                 )
                             },
-                            avatar = {},
-                            border = BorderStroke(
-                                width = 1.dp,
-                                color = if (isTopicsSelected)
-                                    MaterialTheme.colorScheme.primaryContainer
-                                else MaterialTheme.colorScheme.outlineVariant
-                            ),
+                            avatar = { },
                             trailingIcon = {
                                 if (selectedTopics.isNotEmpty() && initialTopics.size != selectedTopics.size) {
                                     Icon(
@@ -256,23 +228,16 @@ fun MemoOverviewScreen(
                                             }
                                     )
                                 }
-                            },
-                            shape = RoundedCornerShape(16.dp),
-                            colors = InputChipDefaults.inputChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.onPrimary,
-                                containerColor = Color.Transparent,
-                                selectedLeadingIconColor = Color.Unspecified,
-                                selectedTrailingIconColor = Color.Unspecified
-                            )
+                            }
                         )
                     }
 
                     // Moods Dropdown
                     ExposedDropdownMenu(
-                        expanded = isMoodsSelected,
+                        expanded = isMoodsChipSelected,
                         onDismissRequest = {
-                            isMoodsSelected = false
-                            isTopicsSelected = false
+                            isMoodsChipSelected = false
+                            isTopicsChipSelected = false
                         },
                         shape = RoundedCornerShape(10.dp),
                         containerColor = MaterialTheme.colorScheme.surface
@@ -283,46 +248,10 @@ fun MemoOverviewScreen(
                             AnimatedContent(
                                 targetState = selectedMoods.contains(item),
                                 label = "Animate the selected item"
-                            ) { isSelected ->
-                                DropdownMenuItem(
-                                    modifier = Modifier
-                                        .padding(4.dp)
-                                        .border(
-                                            0.dp,
-                                            Color.Transparent,
-                                            RoundedCornerShape(8.dp)
-                                        )
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(
-                                            if (isSelected)
-                                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                                            else Color.Transparent
-                                        ),
-                                    colors = MenuItemColors(
-                                        textColor = MaterialTheme.colorScheme.secondary,
-                                        leadingIconColor = Color.Unspecified,
-                                        trailingIconColor = Color.Unspecified,
-                                        disabledTextColor = Color.Unspecified,
-                                        disabledLeadingIconColor = Color.Unspecified,
-                                        disabledTrailingIconColor = Color.Unspecified
-                                    ),
-                                    text = {
-                                        Text(
-                                            text = item.title
-                                        )
-                                    },
-                                    onClick = {
-                                        selectedMoods.apply {
-                                            if (contains(item)) {
-                                                remove(item)
-                                            } else {
-                                                add(item)
-                                                if (selectedMoods.size == Mood.entries.size) {
-                                                    removeAll(selectedMoods)
-                                                }
-                                            }
-                                        }
-                                    },
+                            ) { isMoodSelected ->
+                                DropdownItem(
+                                    isSelected = isMoodSelected,
+                                    item = item.title,
                                     leadingIcon = {
                                         Icon(
                                             tint = Color.Unspecified,
@@ -337,11 +266,23 @@ fun MemoOverviewScreen(
                                         )
                                     },
                                     trailingIcon = {
-                                        if (isSelected) {
+                                        if (isMoodSelected) {
                                             Icon(
                                                 imageVector = CheckIcon,
                                                 contentDescription = null
                                             )
+                                        }
+                                    },
+                                    onSelect = {
+                                        selectedMoods.apply {
+                                            if (contains(item)) {
+                                                remove(item)
+                                            } else {
+                                                add(item)
+                                                if (selectedMoods.size == Mood.entries.size) {
+                                                    removeAll(selectedMoods)
+                                                }
+                                            }
                                         }
                                     }
                                 )
@@ -351,10 +292,10 @@ fun MemoOverviewScreen(
 
                     // Topics Dropdown
                     ExposedDropdownMenu(
-                        expanded = isTopicsSelected,
+                        expanded = isTopicsChipSelected,
                         onDismissRequest = {
-                            isMoodsSelected = false
-                            isTopicsSelected = false
+                            isMoodsChipSelected = false
+                            isTopicsChipSelected = false
                         },
                         shape = RoundedCornerShape(10.dp),
                         containerColor = MaterialTheme.colorScheme.surface
@@ -365,35 +306,11 @@ fun MemoOverviewScreen(
                             AnimatedContent(
                                 targetState = selectedTopics.contains(topic),
                                 label = "Animate the selected item"
-                            ) { isSelected ->
-                                DropdownMenuItem(
-                                    modifier = Modifier
-                                        .padding(4.dp)
-                                        .border(
-                                            0.dp,
-                                            Color.Transparent,
-                                            RoundedCornerShape(8.dp)
-                                        )
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(
-                                            if (isSelected)
-                                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                                            else Color.Transparent
-                                        ),
-                                    colors = MenuItemColors(
-                                        textColor = MaterialTheme.colorScheme.secondary,
-                                        leadingIconColor = Color.Unspecified,
-                                        trailingIconColor = Color.Unspecified,
-                                        disabledTextColor = Color.Unspecified,
-                                        disabledLeadingIconColor = Color.Unspecified,
-                                        disabledTrailingIconColor = Color.Unspecified
-                                    ),
-                                    text = {
-                                        Text(
-                                            text = topic
-                                        )
-                                    },
-                                    onClick = {
+                            ) { isTopicSelected ->
+                                DropdownItem(
+                                    isSelected = isTopicSelected,
+                                    item = topic,
+                                    onSelect = {
                                         selectedTopics.apply {
                                             if (contains(topic)) {
                                                 remove(topic)
@@ -414,12 +331,10 @@ fun MemoOverviewScreen(
                                         )
                                     },
                                     trailingIcon = {
-                                        if (isSelected) {
-                                            Icon(
-                                                imageVector = CheckIcon,
-                                                contentDescription = null
-                                            )
-                                        }
+                                        Icon(
+                                            imageVector = CheckIcon,
+                                            contentDescription = null
+                                        )
                                     }
                                 )
                             }
