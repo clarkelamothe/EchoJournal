@@ -52,6 +52,7 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.components.i
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.SadIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.StressedIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.EchoJournalTheme
+import com.clarkelamothe.echojournal.core.presentation.designsystem.TopicsDropdownMenu
 import com.clarkelamothe.echojournal.core.presentation.ui.ObserveAsEvents
 
 @Composable
@@ -120,9 +121,7 @@ fun MemoOverviewScreen(
         val selectedMoods = remember { mutableStateListOf<Mood>() }
         val initialTopics = remember {
             mutableStateListOf<String>().apply {
-                addAll(
-                    listOf("Work", "Friends", "Family", "Love", "Surprise")
-                )
+                addAll(listOf("Work", "Friends", "Family", "Love", "Surprise"))
             }
         }
         val selectedTopics = remember { mutableStateListOf<String>() }
@@ -144,7 +143,7 @@ fun MemoOverviewScreen(
                     ) {
                         // Moods Chip
                         InputChip(
-                            selected = isMoodsSelected,
+                            selected = isMoodsSelected || selectedMoods.isNotEmpty(),
                             onClick = {
                                 isMoodsSelected = !isMoodsSelected
                                 isTopicsSelected = false
@@ -209,7 +208,7 @@ fun MemoOverviewScreen(
 
                         // Topic Chip
                         InputChip(
-                            selected = isTopicsSelected,
+                            selected = isTopicsSelected || selectedTopics.isNotEmpty(),
                             onClick = {
                                 isTopicsSelected = !isTopicsSelected
                                 isMoodsSelected = false
@@ -404,6 +403,7 @@ fun MemoOverviewScreen(
                                                     removeAll(selectedTopics)
                                                 }
                                             }
+                                            sort()
                                         }
                                     },
                                     leadingIcon = {
