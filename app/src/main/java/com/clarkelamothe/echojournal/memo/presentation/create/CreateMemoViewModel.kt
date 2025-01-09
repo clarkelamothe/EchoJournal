@@ -9,6 +9,7 @@ class CreateMemoViewModel : ViewModel() {
     val events = eventChannel.receiveAsFlow()
 
     fun onAction(action: CreateMemoAction) {
+        println(action)
         when (action) {
             CreateMemoAction.OnAddMoodClick -> {
 

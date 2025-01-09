@@ -98,7 +98,7 @@ fun CreateMemoScreenRoot(
             when (it) {
                 CreateMemoAction.OnBackClick -> onBackClick()
                 CreateMemoAction.OnCancelClick -> onBackClick()
-                else -> {}
+                else -> viewModel.onAction(it)
             }
         }
     )
@@ -669,7 +669,7 @@ fun CreateMemoScreen(
                     ) {
                         Button(
                             onClick = {
-                                onAction(CreateMemoAction.OnCancelClick)
+                                onAction(CreateMemoAction.OnCancelMoodClick)
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = SurfaceTint.copy(alpha = 0.12f),
@@ -694,7 +694,7 @@ fun CreateMemoScreen(
                                     shape = CircleShape
                                 ),
                             onClick = {
-                                onAction(CreateMemoAction.OnSaveClick)
+                                onAction(CreateMemoAction.OnConfirmMoodClick)
                             },
                             colors = ButtonColors(
                                 disabledContainerColor = SurfaceVariant,

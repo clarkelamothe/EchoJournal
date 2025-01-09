@@ -7,4 +7,6 @@ sealed interface CreateMemoAction {
     data object OnCancelClick : CreateMemoAction
     data object OnSaveClick : CreateMemoAction
     data object OnBackClick : CreateMemoAction
+    data object OnCancelMoodClick : CreateMemoAction
+    data object OnConfirmMoodClick : CreateMemoAction
 }
