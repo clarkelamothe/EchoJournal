@@ -24,3 +24,23 @@ val SadIcon: ImageVector
 val StressedIcon: ImageVector
     @Composable
     get() = ImageVector.vectorResource(R.drawable.ic_mood_stressed_active)
+
+val ExcitedIconOutline: ImageVector
+    @Composable
+    get() = ImageVector.vectorResource(R.drawable.ic_excited_outline)
+
+val NeutralIconOutline: ImageVector
+    @Composable
+    get() = ImageVector.vectorResource(R.drawable.ic_neutral_outline)
+
+val PeacefulIconOutline: ImageVector
+    @Composable
+    get() = ImageVector.vectorResource(R.drawable.ic_peace_outline)
+
+val SadIconOutline: ImageVector
+    @Composable
+    get() = ImageVector.vectorResource(R.drawable.ic_sad_outline)
+
+val StressedIconOutline: ImageVector
+    @Composable
+    get() = ImageVector.vectorResource(R.drawable.ic_stressed_outline)
