@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.clarkelamothe.echojournal.core.presentation.ui.viewModelFactory
 import com.clarkelamothe.echojournal.memo.presentation.create.CreateMemoScreenRoot
+import com.clarkelamothe.echojournal.memo.presentation.create.CreateMemoViewModel
 import com.clarkelamothe.echojournal.memo.presentation.overview.MemoOverviewScreenRoot
 import com.clarkelamothe.echojournal.memo.presentation.overview.MemoOverviewViewModel
 import com.clarkelamothe.echojournal.memo.presentation.settings.SettingsScreenRoot
@@ -42,7 +43,14 @@ fun NavigationRoot(
             }
 
             composable<Routes.MemoCreate> {
+                val viewModel = viewModel<CreateMemoViewModel>(
+                    factory = viewModelFactory {
+                        CreateMemoViewModel()
+                    }
+                )
+
                 CreateMemoScreenRoot(
+                    viewModel = viewModel,
                     onBackClick = {
                         navController.navigateUp()
                     }
