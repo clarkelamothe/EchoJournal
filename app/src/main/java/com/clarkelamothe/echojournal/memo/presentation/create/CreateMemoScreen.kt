@@ -9,11 +9,8 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -63,6 +60,7 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.components.i
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.HashtagIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.PlayIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.EchoJournalTheme
+import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Gray6
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Secondary70
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Secondary95
 
@@ -91,9 +89,9 @@ fun CreateMemoScreen(
             )
         },
         floatingActionButton = {}
-    ) {
+    ) { paddingValues ->
         Column(
-            modifier = Modifier.padding(it),
+            modifier = Modifier.padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -136,6 +134,9 @@ fun CreateMemoScreen(
                             style = MaterialTheme.typography.headlineLarge
                         )
                     },
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words
+                    ),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
@@ -233,6 +234,7 @@ fun CreateMemoScreen(
                 val topics = remember {
                     mutableStateListOf<String>()
                 }
+
                 BasicTextField(
                     lineLimits = TextFieldLineLimits.SingleLine,
                     state = textFieldState,
@@ -240,10 +242,11 @@ fun CreateMemoScreen(
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.onBackground),
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Words,
-                        imeAction = ImeAction.Done
+                        imeAction = if (topics.size < 4) ImeAction.Next else ImeAction.Done
                     ),
                     onKeyboardAction = {
-                        topics.add(textFieldState.text.toString())
+                        if (textFieldState.text.isNotEmpty() && topics.size < 5)
+                            topics.add(textFieldState.text.toString())
                         textFieldState.clearText()
                     },
                     modifier = Modifier
@@ -252,15 +255,17 @@ fun CreateMemoScreen(
                             isFocused = focusState.isFocused
                         },
                     decorator = { innerBox ->
-                        Row(
+                        FlowRow(
                             modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.Top,
-                            horizontalArrangement = Arrangement.Center
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalArrangement = Arrangement.Center,
+                            maxItemsInEachRow = 5
                         ) {
                             IconButton(
                                 onClick = {},
                                 modifier = Modifier
                                     .size(32.dp)
+                                    .align(Alignment.CenterVertically)
                             ) {
                                 Icon(
                                     imageVector = HashtagIcon,
@@ -269,69 +274,63 @@ fun CreateMemoScreen(
                                 )
                             }
 
-                            FlowRow(
-                                modifier = Modifier.weight(1f),
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                if (textFieldState.text.isEmpty() && !isFocused) {
-                                    Text(
-                                        text = stringResource(R.string.add_topic),
-                                        color = MaterialTheme.colorScheme.outlineVariant,
-                                        modifier = Modifier.fillMaxSize()
-                                    )
-                                } else {
-                                    with(topics) {
-                                        if (isNotEmpty()) {
-                                            map {
-                                                InputChip(
-                                                    onClick = {
-                                                    },
-                                                    label = {
-                                                        Text(
-                                                            text = it,
-                                                            style = MaterialTheme.typography.labelLarge,
-                                                            color = MaterialTheme.colorScheme.secondary,
-                                                            maxLines = 1,
-                                                            overflow = TextOverflow.Ellipsis,
-                                                            textAlign = TextAlign.Center
-                                                        )
-                                                    },
-                                                    selected = false,
-                                                    avatar = {
-
-                                                        Icon(
-                                                            imageVector = HashtagIcon,
-                                                            contentDescription = null,
-                                                            tint = MaterialTheme.colorScheme.outlineVariant,
-                                                        )
-
-                                                    },
-                                                    trailingIcon = {
-                                                        Icon(
-                                                            imageVector = CloseIcon,
-                                                            contentDescription = null,
-                                                            tint = Color.Unspecified,
-                                                            modifier = Modifier
-                                                                .clickable {
-                                                                }
-                                                        )
-
-                                                    },
-                                                    shape = RoundedCornerShape(16.dp),
-                                                    colors = InputChipDefaults.inputChipColors(
-                                                        selectedContainerColor = MaterialTheme.colorScheme.onPrimary,
-                                                        containerColor = Color.Transparent,
-                                                        selectedLeadingIconColor = Color.Unspecified,
-                                                        selectedTrailingIconColor = Color.Unspecified
+                            if (textFieldState.text.isEmpty() && !isFocused) {
+                                Text(
+                                    text = stringResource(R.string.add_topic),
+                                    color = MaterialTheme.colorScheme.outlineVariant,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.align(Alignment.CenterVertically)
+                                )
+                            } else {
+                                with(topics) {
+                                    if (isNotEmpty()) {
+                                        mapIndexed { index, topic ->
+                                            InputChip(
+                                                onClick = {},
+                                                label = {
+                                                    Text(
+                                                        text = topic,
+                                                        style = MaterialTheme.typography.labelLarge,
+                                                        color = MaterialTheme.colorScheme.secondary,
+                                                        overflow = TextOverflow.Ellipsis,
+                                                        textAlign = TextAlign.Center
                                                     )
-                                                )
-                                            }
+                                                },
+                                                selected = true,
+                                                avatar = {
+                                                    Icon(
+                                                        imageVector = HashtagIcon,
+                                                        contentDescription = null,
+                                                        tint = MaterialTheme.colorScheme.outlineVariant,
+                                                    )
+                                                },
+                                                trailingIcon = {
+                                                    Icon(
+                                                        imageVector = CloseIcon,
+                                                        contentDescription = null,
+                                                        modifier = Modifier
+                                                            .size(16.dp)
+                                                            .clickable {
+                                                                topics.removeAt(index)
+                                                            }
+                                                    )
+                                                },
+                                                shape = RoundedCornerShape(16.dp),
+                                                colors = InputChipDefaults.inputChipColors(
+                                                    containerColor = Gray6,
+                                                    selectedContainerColor = Gray6,
+                                                    leadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    trailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    selectedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                                        alpha = 0.3f
+                                                    )
+                                                ),
+                                                modifier = Modifier.align(Alignment.CenterVertically)
+                                            )
                                         }
                                     }
-                                    Spacer(Modifier.height(4.dp))
-                                    innerBox()
                                 }
+                                Box(modifier = Modifier.align(Alignment.CenterVertically)) { innerBox() }
                             }
                         }
                     }
@@ -359,6 +358,9 @@ fun CreateMemoScreen(
                         .onFocusChanged { focusState ->
                             isFocused = focusState.isFocused
                         },
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences
+                    ),
                     decorator = { innerBox ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -366,9 +368,7 @@ fun CreateMemoScreen(
                         ) {
                             IconButton(
                                 onClick = {},
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .alignByBaseline()
+                                modifier = Modifier.size(32.dp)
                             ) {
                                 Icon(
                                     imageVector = EditIcon,

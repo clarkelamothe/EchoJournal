@@ -56,3 +56,5 @@ val Excited25 = Color(0xFFF5F2EF)
 val Excited35 = Color(0xFFDDD2C8)
 val Excited80 = Color(0xFFDB6C0B)
 val Excited95 = Color(0xFF723602)
+
+val Gray6 = Color(0xFFF2F2F7)
