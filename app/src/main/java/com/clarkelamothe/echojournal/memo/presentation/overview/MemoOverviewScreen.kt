@@ -283,7 +283,14 @@ fun MemoOverviewScreen(
 private fun MemoOverviewScreenPreview() {
     EchoJournalTheme {
         MemoOverviewScreen(
-            state = MemoOverviewState(),
+            state = MemoOverviewState(
+                moodChipLabel = "All Moods",
+                topicChipLabel = "Sad, Excited +2",
+                moods = listOf(Mood.Neutral, Mood.Sad, Mood.Peaceful),
+                selectedMoods = listOf(Mood.Sad, Mood.Excited),
+                topics = listOf("Work", "Family", "Life", "Love", "Surprise"),
+                selectedTopics = listOf("Work", "Family", "Life")
+            ),
             onClearMood = {},
             onSelectMood = {},
             onClearTopic = {},

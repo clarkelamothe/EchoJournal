@@ -7,6 +7,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clarkelamothe.echojournal.core.domain.Mood
+import com.clarkelamothe.echojournal.core.domain.VoiceMemo
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -96,5 +97,5 @@ data class MemoOverviewState(
     val selectedMoods: List<Mood> = emptyList(),
     val topics: List<String> = listOf(""),
     val selectedTopics: List<String> = emptyList(),
-    val memos: Any? = null
+    val memos: List<VoiceMemo>? = null
 )
