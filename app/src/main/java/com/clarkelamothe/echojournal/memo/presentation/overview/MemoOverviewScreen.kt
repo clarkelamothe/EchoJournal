@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalLayoutApi::class)
+
 package com.clarkelamothe.echojournal.memo.presentation.overview
 
 import androidx.compose.animation.AnimatedContent
@@ -10,14 +12,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -52,7 +52,7 @@ import com.clarkelamothe.echojournal.core.presentation.ui.ObserveAsEvents
 fun MemoOverviewScreenRoot(
     viewModel: MemoOverviewViewModel,
     onSettingsClick: () -> Unit,
-    onVoiceMemoRecorded: () -> Unit
+    onVoiceMemoRecorded: () -> Unit,
 ) {
     ObserveAsEvents(viewModel.events) {
         when (it) {
@@ -60,17 +60,25 @@ fun MemoOverviewScreenRoot(
         }
     }
 
-    MemoOverviewScreen(
-        onAction = {
-
-        }
-    )
+    with(viewModel) {
+        MemoOverviewScreen(
+            state = state,
+            onClearMood = ::onClearMood,
+            onSelectMood = ::onSelect,
+            onClearTopic = ::onClearTopic,
+            onSelectTopic = ::onSelect
+        )
+    }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+
 @Composable
 fun MemoOverviewScreen(
-    onAction: (MemoOverviewScreenAction) -> Unit
+    state: MemoOverviewState,
+    onClearMood: () -> Unit,
+    onSelectMood: (Mood) -> Unit,
+    onClearTopic: () -> Unit,
+    onSelectTopic: (String) -> Unit
 ) {
     EchoJournalScaffold(
         topAppBar = {
@@ -78,7 +86,6 @@ fun MemoOverviewScreen(
                 title = stringResource(R.string.your_echojournal),
                 showSettingsButton = true,
                 onSettingsClick = {
-                    onAction(MemoOverviewScreenAction.OnSettingsClick)
                 }
             )
         },
@@ -86,28 +93,18 @@ fun MemoOverviewScreen(
             RecordMemoActionButtons(
                 modifier = Modifier.padding(bottom = 40.dp),
                 onStartRecording = {
-                    onAction(MemoOverviewScreenAction.OnStartRecording)
                 },
                 onCancelRecording = {
-                    onAction(MemoOverviewScreenAction.OnCancelRecording)
                 },
                 onFinishRecording = {
-                    onAction(MemoOverviewScreenAction.OnFinishRecording)
                 }
             )
         }
     ) { paddingValues ->
-        var isMoodsChipSelected by remember { mutableStateOf(false) }
-        var isTopicsChipSelected by remember { mutableStateOf(false) }
-
-        val selectedMoods = remember { mutableStateListOf<Mood>() }
-        val initialTopics = remember {
-            mutableStateListOf<String>().apply {
-                addAll(listOf("Work", "Friends", "Family", "Love", "Surprise"))
-            }
-        }
-        val selectedTopics = remember { mutableStateListOf<String>() }
         val menuWidth = LocalConfiguration.current.screenWidthDp.dp - 32.dp
+
+        var isMoodsChipClick by remember { mutableStateOf(false) }
+        var isTopicsChipClick by remember { mutableStateOf(false) }
 
         LazyColumn(
             modifier = Modifier.padding(paddingValues)
@@ -118,20 +115,14 @@ fun MemoOverviewScreen(
                 ) {
                     // Moods Chip
                     EchoJournalChip(
-                        selected = isMoodsChipSelected || selectedMoods.isNotEmpty(),
+                        selected = isMoodsChipClick || state.selectedMoods.isNotEmpty(),
                         onClick = {
-                            isMoodsChipSelected = !isMoodsChipSelected
-                            isTopicsChipSelected = false
+                            isMoodsChipClick = !isMoodsChipClick
+                            isTopicsChipClick = false
                         },
                         label = {
                             Text(
-                                text = if (selectedMoods.isEmpty() || selectedMoods.size == Mood.entries.size)
-                                    "All Moods"
-                                else {
-                                    selectedMoods.joinToString(separator = ", ") {
-                                        it.title
-                                    }
-                                },
+                                text = state.moodChipLabel,
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.secondary,
                                 maxLines = 1,
@@ -141,7 +132,7 @@ fun MemoOverviewScreen(
                         },
                         avatar = {
                             MoodIconsRow(
-                                icons = selectedMoods.map {
+                                icons = state.selectedMoods.map {
                                     when (it) {
                                         Mood.Stressed -> StressedIcon
                                         Mood.Sad -> SadIcon
@@ -153,15 +144,12 @@ fun MemoOverviewScreen(
                             )
                         },
                         trailingIcon = {
-                            if (selectedMoods.isNotEmpty() && Mood.entries.size != selectedMoods.size) {
+                            if (state.selectedMoods.isNotEmpty() && state.moods.size != state.selectedMoods.size) {
                                 Icon(
                                     imageVector = CloseIcon,
                                     contentDescription = null,
                                     tint = Color.Unspecified,
-                                    modifier = Modifier
-                                        .clickable {
-                                            selectedMoods.clear()
-                                        }
+                                    modifier = Modifier.clickable { onClearMood() }
                                 )
                             }
                         }
@@ -169,28 +157,14 @@ fun MemoOverviewScreen(
 
                     // Topic Chip
                     EchoJournalChip(
-                        selected = isTopicsChipSelected || selectedTopics.isNotEmpty(),
+                        selected = isTopicsChipClick || state.selectedTopics.isNotEmpty(),
                         onClick = {
-                            isTopicsChipSelected = !isTopicsChipSelected
-                            isMoodsChipSelected = false
+                            isTopicsChipClick = !isTopicsChipClick
+                            isMoodsChipClick = false
                         },
                         label = {
                             Text(
-                                text = if (
-                                    selectedTopics.isEmpty() || selectedTopics.size == initialTopics.size
-                                ) "All Topics" else {
-                                    val firstTwo = selectedTopics.take(2)
-
-                                    if (selectedTopics.size < 2) {
-                                        firstTwo.joinToString(", ") {
-                                            it
-                                        }
-                                    } else {
-                                        firstTwo.joinToString(", ") {
-                                            it
-                                        } + " +${initialTopics.size - selectedTopics.size}"
-                                    }
-                                },
+                                text = state.topicChipLabel,
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.secondary,
                                 maxLines = 1,
@@ -200,15 +174,12 @@ fun MemoOverviewScreen(
                         },
                         avatar = { },
                         trailingIcon = {
-                            if (selectedTopics.isNotEmpty() && initialTopics.size != selectedTopics.size) {
+                            if (state.selectedTopics.isNotEmpty() && state.topics.size != state.selectedTopics.size) {
                                 Icon(
                                     imageVector = CloseIcon,
                                     contentDescription = null,
                                     tint = Color.Unspecified,
-                                    modifier = Modifier
-                                        .clickable {
-                                            selectedTopics.clear()
-                                        }
+                                    modifier = Modifier.clickable { onClearTopic() }
                                 )
                             }
                         }
@@ -218,19 +189,19 @@ fun MemoOverviewScreen(
                 // Moods Dropdown
                 DropdownMenu(
                     modifier = Modifier.width(menuWidth),
-                    expanded = isMoodsChipSelected,
+                    expanded = isMoodsChipClick,
                     onDismissRequest = {
-                        isMoodsChipSelected = false
-                        isTopicsChipSelected = false
+                        isMoodsChipClick = false
+                        isTopicsChipClick = false
                     },
                     shape = RoundedCornerShape(10.dp),
                     containerColor = MaterialTheme.colorScheme.surface
                 ) {
-                    Mood.entries.forEach { item ->
+                    state.moods.forEach { item ->
                         key(item) { item.hashCode() }
 
                         AnimatedContent(
-                            targetState = selectedMoods.contains(item),
+                            targetState = state.selectedMoods.contains(item),
                             label = "Animate the selected item"
                         ) { isMoodSelected ->
                             DropdownItem(
@@ -257,18 +228,7 @@ fun MemoOverviewScreen(
                                         )
                                     }
                                 },
-                                onSelect = {
-                                    selectedMoods.apply {
-                                        if (contains(item)) {
-                                            remove(item)
-                                        } else {
-                                            add(item)
-                                            if (selectedMoods.size == Mood.entries.size) {
-                                                removeAll(selectedMoods)
-                                            }
-                                        }
-                                    }
-                                }
+                                onSelect = { onSelectMood(item) }
                             )
                         }
                     }
@@ -277,37 +237,25 @@ fun MemoOverviewScreen(
                 // Topics Dropdown
                 DropdownMenu(
                     modifier = Modifier.width(menuWidth),
-                    expanded = isTopicsChipSelected,
+                    expanded = isTopicsChipClick,
                     onDismissRequest = {
-                        isMoodsChipSelected = false
-                        isTopicsChipSelected = false
+                        isMoodsChipClick = false
+                        isTopicsChipClick = false
                     },
                     shape = RoundedCornerShape(10.dp),
                     containerColor = MaterialTheme.colorScheme.surface
                 ) {
-                    initialTopics.forEach { topic ->
+                    state.topics.forEach { topic ->
                         key(topic) { topic.hashCode() }
 
                         AnimatedContent(
-                            targetState = selectedTopics.contains(topic),
+                            targetState = state.selectedTopics.contains(topic),
                             label = "Animate the selected item"
                         ) { isTopicSelected ->
                             DropdownItem(
                                 isSelected = isTopicSelected,
                                 item = topic,
-                                onSelect = {
-                                    selectedTopics.apply {
-                                        if (contains(topic)) {
-                                            remove(topic)
-                                        } else {
-                                            add(topic)
-                                            if (selectedTopics.size == initialTopics.size) {
-                                                removeAll(selectedTopics)
-                                            }
-                                        }
-                                        sort()
-                                    }
-                                },
+                                onSelect = { onSelectTopic(topic) },
                                 leadingIcon = {
                                     Icon(
                                         tint = Color.Unspecified,
@@ -335,7 +283,11 @@ fun MemoOverviewScreen(
 private fun MemoOverviewScreenPreview() {
     EchoJournalTheme {
         MemoOverviewScreen(
-            onAction = {}
+            state = MemoOverviewState(),
+            onClearMood = {},
+            onSelectMood = {},
+            onClearTopic = {},
+            onSelectTopic = {}
         )
     }
 }
