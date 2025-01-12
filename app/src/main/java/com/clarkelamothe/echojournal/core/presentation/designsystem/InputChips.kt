@@ -21,7 +21,8 @@ fun Chip(
     text: String,
     selected: Boolean = true,
     trailingIcon: @Composable () -> Unit = {},
-    onCloseClick: (String) -> Unit = {}
+    onCloseClick: (String) -> Unit = {},
+    onClick: () -> Unit = {}
 ) {
     InputChip(
         onClick = {},

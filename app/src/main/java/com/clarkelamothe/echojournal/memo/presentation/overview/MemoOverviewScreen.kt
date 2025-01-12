@@ -374,21 +374,13 @@ fun MemoOverviewScreen(
                                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                                         verticalArrangement = Arrangement.Center
                                     ) {
-                                        it.topics.map {
+                                        it.topics.map { topic ->
                                             Chip(
                                                 modifier = Modifier,
-                                                text = it.toString(),
+                                                text = topic,
                                                 selected = true,
-                                                trailingIcon = {
-                                                    Icon(
-                                                        imageVector = CloseIcon,
-                                                        contentDescription = null,
-                                                        modifier = Modifier
-                                                            .size(16.dp)
-                                                            .clickable {
-
-                                                            }
-                                                    )
+                                                onClick = {
+                                                    onSelectTopic(topic)
                                                 }
                                             )
                                         }
@@ -424,7 +416,7 @@ private fun MemoOverviewScreenPreview() {
                             description = "If a voice memo’s play button is pressed, possible playback for other memos should stop and the new memo should start playing.",
                             audio = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id venenatis justo, vel tristique magna. Donec id lectus sit amet tortor tempor porttitor. Aenean egestas lectus id lectus varius, sit amet laoreet justo tempus. Sed varius mauris nunc, non porta enim finibus pellentesque. Maecenas vitae massa ac nibh porttitor ultricies eget vel enim.",
                             mood = Mood.Peaceful,
-                            topics = listOf()
+                            topics = listOf("Work", "Life")
                         )
                     )
                 )
@@ -432,7 +424,8 @@ private fun MemoOverviewScreenPreview() {
             onClearMood = {},
             onSelectMood = {},
             onClearTopic = {},
-            onSelectTopic = {}
+            onSelectTopic = {},
+            onFabClick = {}
         )
     }
 }
