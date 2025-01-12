@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -123,267 +124,171 @@ fun MemoOverviewScreen(
         var isMoodsChipClick by remember { mutableStateOf(false) }
         var isTopicsChipClick by remember { mutableStateOf(false) }
 
-        LazyColumn(
-            modifier = Modifier.padding(paddingValues),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            item(contentType = "Filters") {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+        when (state) {
+            MemoOverviewState.Empty -> EmptyStateScreen(Modifier.fillMaxSize())
+            is MemoOverviewState.VoiceMemos -> {
+                LazyColumn(
+                    modifier = Modifier.padding(paddingValues),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Moods Chip
-                    EchoJournalChip(
-                        selected = isMoodsChipClick || state.selectedMoods.isNotEmpty(),
-                        onClick = {
-                            isMoodsChipClick = !isMoodsChipClick
-                            isTopicsChipClick = false
-                        },
-                        label = {
-                            Text(
-                                text = state.moodChipLabel,
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.secondary,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = TextAlign.Center
-                            )
-                        },
-                        avatar = {
-                            MoodIconsRow(
-                                icons = state.selectedMoods.map {
-                                    when (it) {
-                                        Mood.Stressed -> StressedIcon
-                                        Mood.Sad -> SadIcon
-                                        Mood.Neutral -> NeutralIcon
-                                        Mood.Peaceful -> PeacefulIcon
-                                        Mood.Excited -> ExcitedIcon
-                                    }
-                                }
-                            )
-                        },
-                        trailingIcon = {
-                            if (state.selectedMoods.isNotEmpty() && state.moods.size != state.selectedMoods.size) {
-                                Icon(
-                                    imageVector = CloseIcon,
-                                    contentDescription = null,
-                                    tint = Color.Unspecified,
-                                    modifier = Modifier.clickable { onClearMood() }
-                                )
-                            }
-                        }
-                    )
-
-                    // Topic Chip
-                    EchoJournalChip(
-                        selected = isTopicsChipClick || state.selectedTopics.isNotEmpty(),
-                        onClick = {
-                            isTopicsChipClick = !isTopicsChipClick
-                            isMoodsChipClick = false
-                        },
-                        label = {
-                            Text(
-                                text = state.topicChipLabel,
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.secondary,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = TextAlign.Center
-                            )
-                        },
-                        avatar = { },
-                        trailingIcon = {
-                            if (state.selectedTopics.isNotEmpty() && state.topics.size != state.selectedTopics.size) {
-                                Icon(
-                                    imageVector = CloseIcon,
-                                    contentDescription = null,
-                                    tint = Color.Unspecified,
-                                    modifier = Modifier.clickable { onClearTopic() }
-                                )
-                            }
-                        }
-                    )
-                }
-
-                // Moods Dropdown
-                DropdownMenu(
-                    modifier = Modifier.width(menuWidth),
-                    expanded = isMoodsChipClick,
-                    onDismissRequest = {
-                        isMoodsChipClick = false
-                        isTopicsChipClick = false
-                    },
-                    shape = RoundedCornerShape(10.dp),
-                    containerColor = MaterialTheme.colorScheme.surface
-                ) {
-                    state.moods.forEach { item ->
-                        key(item) { item.hashCode() }
-
-                        AnimatedContent(
-                            targetState = state.selectedMoods.contains(item),
-                            label = "Animate the selected item"
-                        ) { isMoodSelected ->
-                            DropdownItem(
-                                isSelected = isMoodSelected,
-                                item = item.title,
-                                leadingIcon = {
-                                    Icon(
-                                        tint = Color.Unspecified,
-                                        imageVector = when (item) {
-                                            Mood.Stressed -> StressedIcon
-                                            Mood.Sad -> SadIcon
-                                            Mood.Neutral -> NeutralIcon
-                                            Mood.Peaceful -> PeacefulIcon
-                                            Mood.Excited -> ExcitedIcon
-                                        },
-                                        contentDescription = null
+                    item(contentType = "Filters") {
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            // Moods Chip
+                            EchoJournalChip(
+                                selected = isMoodsChipClick || state.selectedMoods.isNotEmpty(),
+                                onClick = {
+                                    isMoodsChipClick = !isMoodsChipClick
+                                    isTopicsChipClick = false
+                                },
+                                label = {
+                                    Text(
+                                        text = state.moodChipLabel,
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.secondary,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        textAlign = TextAlign.Center
+                                    )
+                                },
+                                avatar = {
+                                    MoodIconsRow(
+                                        icons = state.selectedMoods.map {
+                                            when (it) {
+                                                Mood.Stressed -> StressedIcon
+                                                Mood.Sad -> SadIcon
+                                                Mood.Neutral -> NeutralIcon
+                                                Mood.Peaceful -> PeacefulIcon
+                                                Mood.Excited -> ExcitedIcon
+                                            }
+                                        }
                                     )
                                 },
                                 trailingIcon = {
-                                    if (isMoodSelected) {
+                                    if (state.selectedMoods.isNotEmpty() && state.moods.size != state.selectedMoods.size) {
                                         Icon(
-                                            imageVector = CheckIcon,
-                                            contentDescription = null
+                                            imageVector = CloseIcon,
+                                            contentDescription = null,
+                                            tint = Color.Unspecified,
+                                            modifier = Modifier.clickable { onClearMood() }
                                         )
                                     }
-                                },
-                                onSelect = { onSelectMood(item) }
+                                }
                             )
-                        }
-                    }
-                }
 
-                // Topics Dropdown
-                DropdownMenu(
-                    modifier = Modifier.width(menuWidth),
-                    expanded = isTopicsChipClick,
-                    onDismissRequest = {
-                        isMoodsChipClick = false
-                        isTopicsChipClick = false
-                    },
-                    shape = RoundedCornerShape(10.dp),
-                    containerColor = MaterialTheme.colorScheme.surface
-                ) {
-                    state.topics.forEach { topic ->
-                        key(topic) { topic.hashCode() }
-
-                        AnimatedContent(
-                            targetState = state.selectedTopics.contains(topic),
-                            label = "Animate the selected item"
-                        ) { isTopicSelected ->
-                            DropdownItem(
-                                isSelected = isTopicSelected,
-                                item = topic,
-                                onSelect = { onSelectTopic(topic) },
-                                leadingIcon = {
-                                    Icon(
-                                        tint = Color.Unspecified,
-                                        imageVector = HashtagIcon,
-                                        contentDescription = null
+                            // Topic Chip
+                            EchoJournalChip(
+                                selected = isTopicsChipClick || state.selectedTopics.isNotEmpty(),
+                                onClick = {
+                                    isTopicsChipClick = !isTopicsChipClick
+                                    isMoodsChipClick = false
+                                },
+                                label = {
+                                    Text(
+                                        text = state.topicChipLabel,
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.secondary,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        textAlign = TextAlign.Center
                                     )
                                 },
+                                avatar = { },
                                 trailingIcon = {
-                                    Icon(
-                                        imageVector = CheckIcon,
-                                        contentDescription = null
-                                    )
+                                    if (state.selectedTopics.isNotEmpty() && state.topics.size != state.selectedTopics.size) {
+                                        Icon(
+                                            imageVector = CloseIcon,
+                                            contentDescription = null,
+                                            tint = Color.Unspecified,
+                                            modifier = Modifier.clickable { onClearTopic() }
+                                        )
+                                    }
                                 }
                             )
                         }
-                    }
-                }
-            }
 
-            state.memos.map {
-                item(contentType = "Day") {
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = it.key.toString(),
-                        modifier = Modifier.padding(top = 12.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                items(
-                    items = it.value
-                ) {
-                    Row(
-                        modifier = Modifier.fillParentMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Icon(
-                            imageVector = NeutralIcon,
-                            contentDescription = null,
-                            tint = Color.Unspecified
-                        )
-
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .shadow(
-                                    elevation = 8.dp,
-                                    shape = RoundedCornerShape(10.dp),
-                                    spotColor = MaterialTheme.colorScheme.primary
-                                )
-                                .background(MaterialTheme.colorScheme.surface)
-                                .padding(horizontal = 14.dp, vertical = 12.dp),
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        // Moods Dropdown
+                        DropdownMenu(
+                            modifier = Modifier.width(menuWidth),
+                            expanded = isMoodsChipClick,
+                            onDismissRequest = {
+                                isMoodsChipClick = false
+                                isTopicsChipClick = false
+                            },
+                            shape = RoundedCornerShape(10.dp),
+                            containerColor = MaterialTheme.colorScheme.surface
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "My Entry",
-                                    style = MaterialTheme.typography.headlineSmall,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "17:30",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                            state.moods.forEach { item ->
+                                key(item) { item.hashCode() }
+
+                                AnimatedContent(
+                                    targetState = state.selectedMoods.contains(item),
+                                    label = "Animate the selected item"
+                                ) { isMoodSelected ->
+                                    DropdownItem(
+                                        isSelected = isMoodSelected,
+                                        item = item.title,
+                                        leadingIcon = {
+                                            Icon(
+                                                tint = Color.Unspecified,
+                                                imageVector = when (item) {
+                                                    Mood.Stressed -> StressedIcon
+                                                    Mood.Sad -> SadIcon
+                                                    Mood.Neutral -> NeutralIcon
+                                                    Mood.Peaceful -> PeacefulIcon
+                                                    Mood.Excited -> ExcitedIcon
+                                                },
+                                                contentDescription = null
+                                            )
+                                        },
+                                        trailingIcon = {
+                                            if (isMoodSelected) {
+                                                Icon(
+                                                    imageVector = CheckIcon,
+                                                    contentDescription = null
+                                                )
+                                            }
+                                        },
+                                        onSelect = { onSelectMood(item) }
+                                    )
+                                }
                             }
+                        }
 
-                            PlayerBar(
-                                modifier = Modifier,
-                                playerState = PlayerState.Idle,
-                                timeStamp = "0:00/7:30",
-                                containerColor = Neutral25,
-                                iconColor = Neutral95,
-                                progress = 0.7f,
-                                onClickPlay = {},
-                                onClickPause = {}
-                            )
+                        // Topics Dropdown
+                        DropdownMenu(
+                            modifier = Modifier.width(menuWidth),
+                            expanded = isTopicsChipClick,
+                            onDismissRequest = {
+                                isMoodsChipClick = false
+                                isTopicsChipClick = false
+                            },
+                            shape = RoundedCornerShape(10.dp),
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ) {
+                            state.topics.forEach { topic ->
+                                key(topic) { topic.hashCode() }
 
-                            Text(
-                                modifier = Modifier.fillMaxWidth(),
-                                style = MaterialTheme.typography.bodyMedium,
-                                overflow = TextOverflow.Ellipsis,
-                                maxLines = 3,
-                                text = it.description
-                            )
-
-                            FlowRow(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                it.topics.map {
-                                    Chip(
-                                        modifier = Modifier,
-                                        text = it.toString(),
-                                        selected = true,
+                                AnimatedContent(
+                                    targetState = state.selectedTopics.contains(topic),
+                                    label = "Animate the selected item"
+                                ) { isTopicSelected ->
+                                    DropdownItem(
+                                        isSelected = isTopicSelected,
+                                        item = topic,
+                                        onSelect = { onSelectTopic(topic) },
+                                        leadingIcon = {
+                                            Icon(
+                                                tint = Color.Unspecified,
+                                                imageVector = HashtagIcon,
+                                                contentDescription = null
+                                            )
+                                        },
                                         trailingIcon = {
                                             Icon(
-                                                imageVector = CloseIcon,
-                                                contentDescription = null,
-                                                modifier = Modifier
-                                                    .size(16.dp)
-                                                    .clickable {
-
-                                                    }
+                                                imageVector = CheckIcon,
+                                                contentDescription = null
                                             )
                                         }
                                     )
@@ -391,9 +296,109 @@ fun MemoOverviewScreen(
                             }
                         }
                     }
+
+                    state.memos.map {
+                        item(contentType = "Day") {
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = it.key.toString(),
+                                modifier = Modifier.padding(top = 12.dp),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        items(
+                            items = it.value
+                        ) {
+                            Row(
+                                modifier = Modifier.fillParentMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Icon(
+                                    imageVector = NeutralIcon,
+                                    contentDescription = null,
+                                    tint = Color.Unspecified
+                                )
+
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .shadow(
+                                            elevation = 8.dp,
+                                            shape = RoundedCornerShape(10.dp),
+                                            spotColor = MaterialTheme.colorScheme.primary
+                                        )
+                                        .background(MaterialTheme.colorScheme.surface)
+                                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "My Entry",
+                                            style = MaterialTheme.typography.headlineSmall,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            text = "17:30",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+
+                                    PlayerBar(
+                                        modifier = Modifier,
+                                        playerState = PlayerState.Idle,
+                                        timeStamp = "0:00/7:30",
+                                        containerColor = Neutral25,
+                                        iconColor = Neutral95,
+                                        progress = 0.7f,
+                                        onClickPlay = {},
+                                        onClickPause = {}
+                                    )
+
+                                    Text(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        overflow = TextOverflow.Ellipsis,
+                                        maxLines = 3,
+                                        text = it.description
+                                    )
+
+                                    FlowRow(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        it.topics.map {
+                                            Chip(
+                                                modifier = Modifier,
+                                                text = it.toString(),
+                                                selected = true,
+                                                trailingIcon = {
+                                                    Icon(
+                                                        imageVector = CloseIcon,
+                                                        contentDescription = null,
+                                                        modifier = Modifier
+                                                            .size(16.dp)
+                                                            .clickable {
+
+                                                            }
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
-
         }
     }
 }
@@ -403,7 +408,7 @@ fun MemoOverviewScreen(
 private fun MemoOverviewScreenPreview() {
     EchoJournalTheme {
         MemoOverviewScreen(
-            state = MemoOverviewState(
+            state = MemoOverviewState.VoiceMemos(
                 moodChipLabel = "All Moods",
                 topicChipLabel = "Sad, Excited +2",
                 moods = listOf(Mood.Neutral, Mood.Sad, Mood.Peaceful),

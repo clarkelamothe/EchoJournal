@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.clarkelamothe.echojournal.core.presentation.ui.viewModelFactory
+import com.clarkelamothe.echojournal.memo.MemoModule
 import com.clarkelamothe.echojournal.memo.presentation.create.CreateMemoScreenRoot
 import com.clarkelamothe.echojournal.memo.presentation.create.CreateMemoViewModel
 import com.clarkelamothe.echojournal.memo.presentation.overview.MemoOverviewScreenRoot
@@ -27,7 +28,9 @@ fun NavigationRoot(
             composable<Routes.MemoOverview> {
                 val viewModel = viewModel<MemoOverviewViewModel>(
                     factory = viewModelFactory {
-                        MemoOverviewViewModel()
+                        MemoOverviewViewModel(
+                            MemoModule.voiceMemoRepository
+                        )
                     }
                 )
 

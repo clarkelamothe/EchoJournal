@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clarkelamothe.echojournal.core.domain.Mood
 import com.clarkelamothe.echojournal.core.domain.VoiceMemo
-import com.clarkelamothe.echojournal.memo.MemoModule
 import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,10 +18,11 @@ import kotlinx.coroutines.flow.update
 import java.time.LocalDateTime
 
 class MemoOverviewViewModel(
+    repository: VoiceMemoRepository
 ) : ViewModel() {
     private val initialTopic = listOf("Work", "Friends", "Family", "Love", "Surprise")
 
-    var state by mutableStateOf(MemoOverviewState(topics = initialTopic))
+    var state by mutableStateOf<MemoOverviewState>(MemoOverviewState.VoiceMemos(topics = initialTopic))
         private set
 
     private val selectedMoods = MutableStateFlow(emptyList<Mood>())
@@ -33,15 +33,21 @@ class MemoOverviewViewModel(
 
     init {
         combine(
+            repository.getAll(),
             selectedMoods,
             selectedTopics
-        ) { selectedMoods, selectedTopics ->
-            state = state.copy(
-                moodChipLabel = moodLabel(),
-                topicChipLabel = topicsLabel(),
-                selectedMoods = selectedMoods,
-                selectedTopics = selectedTopics
-            )
+        ) { memos, selectedMoods, selectedTopics ->
+            state =
+                if (memos.isEmpty()) {
+                    MemoOverviewState.Empty
+                } else {
+                    (state as MemoOverviewState.VoiceMemos).copy(
+                        moodChipLabel = moodLabel(),
+                        topicChipLabel = topicsLabel(),
+                        selectedMoods = selectedMoods,
+                        selectedTopics = selectedTopics
+                    )
+                }
         }.launchIn(viewModelScope)
     }
 
@@ -94,12 +100,15 @@ class MemoOverviewViewModel(
     }
 }
 
-data class MemoOverviewState(
-    val moodChipLabel: String = "",
-    val topicChipLabel: String = "",
-    val moods: List<Mood> = Mood.entries,
-    val selectedMoods: List<Mood> = emptyList(),
-    val topics: List<String> = listOf(""),
-    val selectedTopics: List<String> = emptyList(),
-    val memos: Map<LocalDateTime, List<VoiceMemo>> = emptyMap()
-)
+sealed interface MemoOverviewState {
+    data object Empty : MemoOverviewState
+    data class VoiceMemos(
+        val moodChipLabel: String = "",
+        val topicChipLabel: String = "",
+        val moods: List<Mood> = Mood.entries,
+        val selectedMoods: List<Mood> = emptyList(),
+        val topics: List<String> = listOf(""),
+        val selectedTopics: List<String> = emptyList(),
+        val memos: Map<LocalDateTime, List<VoiceMemo>> = emptyMap()
+    ) : MemoOverviewState
+}
