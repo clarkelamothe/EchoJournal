@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import java.time.LocalDateTime
 
 class MemoOverviewViewModel : ViewModel() {
     private val initialTopic = listOf("Work", "Friends", "Family", "Love", "Surprise")
@@ -97,5 +98,5 @@ data class MemoOverviewState(
     val selectedMoods: List<Mood> = emptyList(),
     val topics: List<String> = listOf(""),
     val selectedTopics: List<String> = emptyList(),
-    val memos: List<VoiceMemo>? = null
+    val memos: Map<LocalDateTime, List<VoiceMemo>> = emptyMap()
 )

@@ -3,13 +3,21 @@
 package com.clarkelamothe.echojournal.memo.presentation.overview
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
@@ -21,7 +29,9 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
@@ -31,11 +41,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.clarkelamothe.echojournal.R
 import com.clarkelamothe.echojournal.core.domain.Mood
+import com.clarkelamothe.echojournal.core.domain.VoiceMemo
+import com.clarkelamothe.echojournal.core.presentation.designsystem.Chip
 import com.clarkelamothe.echojournal.core.presentation.designsystem.DropdownItem
 import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalChip
 import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalScaffold
 import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalToolbar
 import com.clarkelamothe.echojournal.core.presentation.designsystem.MoodIconsRow
+import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerBar
+import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerState
 import com.clarkelamothe.echojournal.core.presentation.designsystem.RecordMemoActionButtons
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.CheckIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.CloseIcon
@@ -46,7 +60,10 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.components.i
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.SadIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.StressedIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.EchoJournalTheme
+import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Neutral25
+import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Neutral95
 import com.clarkelamothe.echojournal.core.presentation.ui.ObserveAsEvents
+import java.time.LocalDateTime
 
 @Composable
 fun MemoOverviewScreenRoot(
@@ -107,7 +124,8 @@ fun MemoOverviewScreen(
         var isTopicsChipClick by remember { mutableStateOf(false) }
 
         LazyColumn(
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier.padding(paddingValues),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item(contentType = "Filters") {
                 FlowRow(
@@ -274,6 +292,108 @@ fun MemoOverviewScreen(
                     }
                 }
             }
+
+            state.memos.map {
+                item(contentType = "Day") {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = it.key.toString(),
+                        modifier = Modifier.padding(top = 12.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                items(
+                    items = it.value
+                ) {
+                    Row(
+                        modifier = Modifier.fillParentMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = NeutralIcon,
+                            contentDescription = null,
+                            tint = Color.Unspecified
+                        )
+
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .shadow(
+                                    elevation = 8.dp,
+                                    shape = RoundedCornerShape(10.dp),
+                                    spotColor = MaterialTheme.colorScheme.primary
+                                )
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "My Entry",
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "17:30",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+
+                            PlayerBar(
+                                modifier = Modifier,
+                                playerState = PlayerState.Idle,
+                                timeStamp = "0:00/7:30",
+                                containerColor = Neutral25,
+                                iconColor = Neutral95,
+                                progress = 0.7f,
+                                onClickPlay = {},
+                                onClickPause = {}
+                            )
+
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                style = MaterialTheme.typography.bodyMedium,
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 3,
+                                text = it.description
+                            )
+
+                            FlowRow(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                it.topics.map {
+                                    Chip(
+                                        modifier = Modifier,
+                                        text = it.toString(),
+                                        selected = true,
+                                        trailingIcon = {
+                                            Icon(
+                                                imageVector = CloseIcon,
+                                                contentDescription = null,
+                                                modifier = Modifier
+                                                    .size(16.dp)
+                                                    .clickable {
+
+                                                    }
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
         }
     }
 }
@@ -289,7 +409,20 @@ private fun MemoOverviewScreenPreview() {
                 moods = listOf(Mood.Neutral, Mood.Sad, Mood.Peaceful),
                 selectedMoods = listOf(Mood.Sad, Mood.Excited),
                 topics = listOf("Work", "Family", "Life", "Love", "Surprise"),
-                selectedTopics = listOf("Work", "Family", "Life")
+                selectedTopics = listOf("Work", "Family", "Life"),
+                memos = mapOf(
+                    LocalDateTime.now() to listOf(
+                        VoiceMemo(
+                            id = 0,
+                            title = "My Entry",
+                            dateTime = LocalDateTime.now(),
+                            description = "If a voice memo’s play button is pressed, possible playback for other memos should stop and the new memo should start playing.",
+                            audio = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id venenatis justo, vel tristique magna. Donec id lectus sit amet tortor tempor porttitor. Aenean egestas lectus id lectus varius, sit amet laoreet justo tempus. Sed varius mauris nunc, non porta enim finibus pellentesque. Maecenas vitae massa ac nibh porttitor ultricies eget vel enim.",
+                            mood = Mood.Peaceful,
+                            topics = listOf()
+                        )
+                    )
+                )
             ),
             onClearMood = {},
             onSelectMood = {},

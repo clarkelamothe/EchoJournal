@@ -1,13 +1,11 @@
 package com.clarkelamothe.echojournal.memo.presentation.create
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -30,8 +28,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.InputChip
-import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -55,27 +51,28 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.clarkelamothe.echojournal.R
+import com.clarkelamothe.echojournal.core.presentation.designsystem.Chip
 import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalScaffold
 import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalToolbar
+import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerBar
+import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerState
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.AddIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.AiIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.CheckIcon
-import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.CloseIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.EditIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.ExcitedIconOutline
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.HashtagIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.NeutralIconOutline
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.PeacefulIconOutline
-import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.PlayIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.SadIconOutline
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.StressedIconOutline
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.ButtonGradient
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.EchoJournalTheme
-import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Gray6
+import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Excited25
+import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Excited95
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Secondary70
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Secondary95
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.SurfaceTint
@@ -189,51 +186,17 @@ fun CreateMemoScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Button(
+                PlayerBar(
                     modifier = Modifier.weight(1f),
-                    onClick = {},
-                    shape = CircleShape,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.inverseOnSurface // to change later to mood color
-                    ),
-                    contentPadding = PaddingValues(
-                        horizontal = 12.dp,
-                        vertical = 8.dp
-                    )
-                ) {
-                    IconButton(
-                        onClick = {
-                            onAction(CreateMemoAction.OnPlayClick)
-                        },
-                        modifier = Modifier
-                            .shadow(
-                                elevation = 8.dp,
-                                shape = CircleShape,
-                                spotColor = MaterialTheme.colorScheme.primary
-                            )
-                            .background(
-                                color = MaterialTheme.colorScheme.surface,
-                                shape = CircleShape
-                            )
-                            .size(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = PlayIcon,
-                            contentDescription = stringResource(R.string.add_a_mood),
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
+                    playerState = PlayerState.Idle,
+                    containerColor = Excited25,
+                    iconColor = Excited95,
+                    timeStamp = "7:00/12:30",
+                    progress = 2.3f,
+                    onClickPlay = {},
+                    onClickPause = {}
+                )
 
-                    Box(modifier = Modifier.weight(1f)) {
-                        // audio waveform
-                    }
-                    Text(
-                        text = "0:00/12:30",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
                 IconButton(
                     onClick = {
                         onAction(CreateMemoAction.OnAiClick)
@@ -295,10 +258,9 @@ fun CreateMemoScreen(
                         },
                     decorator = { innerBox ->
                         FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier,
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalArrangement = Arrangement.Center,
-                            maxItemsInEachRow = 5
+                            verticalArrangement = Arrangement.Center
                         ) {
                             IconButton(
                                 onClick = {},
@@ -324,52 +286,18 @@ fun CreateMemoScreen(
                                 with(topics) {
                                     if (isNotEmpty()) {
                                         mapIndexed { index, topic ->
-                                            InputChip(
-                                                onClick = {},
-                                                label = {
-                                                    Text(
-                                                        text = topic,
-                                                        style = MaterialTheme.typography.labelLarge,
-                                                        color = MaterialTheme.colorScheme.secondary,
-                                                        overflow = TextOverflow.Ellipsis,
-                                                        textAlign = TextAlign.Center
-                                                    )
-                                                },
+                                            Chip(
+                                                modifier = Modifier.align(Alignment.CenterVertically),
+                                                text = topic,
                                                 selected = true,
-                                                avatar = {
-                                                    Icon(
-                                                        imageVector = HashtagIcon,
-                                                        contentDescription = null,
-                                                        tint = MaterialTheme.colorScheme.outlineVariant,
-                                                    )
-                                                },
-                                                trailingIcon = {
-                                                    Icon(
-                                                        imageVector = CloseIcon,
-                                                        contentDescription = null,
-                                                        modifier = Modifier
-                                                            .size(16.dp)
-                                                            .clickable {
-                                                                topics.removeAt(index)
-                                                            }
-                                                    )
-                                                },
-                                                shape = RoundedCornerShape(16.dp),
-                                                colors = InputChipDefaults.inputChipColors(
-                                                    containerColor = Gray6,
-                                                    selectedContainerColor = Gray6,
-                                                    leadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    trailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    selectedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                                                        alpha = 0.3f
-                                                    )
-                                                ),
-                                                modifier = Modifier.align(Alignment.CenterVertically)
+                                                onCloseClick = {
+                                                    
+                                                }
                                             )
                                         }
                                     }
+                                    Box(modifier = Modifier.align(Alignment.CenterVertically)) { innerBox() }
                                 }
-                                Box(modifier = Modifier.align(Alignment.CenterVertically)) { innerBox() }
                             }
                         }
                     }
@@ -501,7 +429,7 @@ fun CreateMemoScreen(
 
 //            BottomSheet
             var showBottomSheet by remember {
-                mutableStateOf(true)
+                mutableStateOf(false)
             }
             val sheetState = rememberModalBottomSheetState()
 
