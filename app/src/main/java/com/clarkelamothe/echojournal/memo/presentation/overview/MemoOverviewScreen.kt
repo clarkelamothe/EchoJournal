@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -46,12 +45,13 @@ import com.clarkelamothe.echojournal.core.domain.VoiceMemo
 import com.clarkelamothe.echojournal.core.presentation.designsystem.Chip
 import com.clarkelamothe.echojournal.core.presentation.designsystem.DropdownItem
 import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalChip
+import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalFab
 import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalScaffold
 import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalToolbar
 import com.clarkelamothe.echojournal.core.presentation.designsystem.MoodIconsRow
 import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerBar
 import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerState
-import com.clarkelamothe.echojournal.core.presentation.designsystem.RecordMemoActionButtons
+import com.clarkelamothe.echojournal.core.presentation.designsystem.RecordingBottomSheet
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.CheckIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.CloseIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.ExcitedIcon
@@ -84,49 +84,68 @@ fun MemoOverviewScreenRoot(
             onClearMood = ::onClearMood,
             onSelectMood = ::onSelect,
             onClearTopic = ::onClearTopic,
-            onSelectTopic = ::onSelect
+            onSelectTopic = ::onSelect,
+            onSettingsClick = onSettingsClick,
+            cancelRecording = {},
+            pauseRecording = {},
+            finishRecording = {},
+            startRecording = {},
+            onClickFab = { showBottomSheet(true) }
+        )
+
+        RecordingBottomSheet(
+            state = PlayerState.Idle,
+            title = state.bottomSheetTitle,
+            elapsedTime = state.bottomSheetTime,
+            show = state.showBottomSheet,
+            onDismissRequest = { showBottomSheet(false) },
+            onCancel = { },
+            startRecording = { },
+            pauseRecording = { },
+            finishRecording = { }
         )
     }
 }
 
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MemoOverviewScreen(
     state: MemoOverviewState,
     onClearMood: () -> Unit,
     onSelectMood: (Mood) -> Unit,
     onClearTopic: () -> Unit,
-    onSelectTopic: (String) -> Unit
+    onSelectTopic: (String) -> Unit,
+    cancelRecording: () -> Unit,
+    pauseRecording: () -> Unit,
+    finishRecording: () -> Unit,
+    startRecording: () -> Unit,
+    onSettingsClick: () -> Unit,
+    onClickFab: () -> Unit
 ) {
     EchoJournalScaffold(
         topAppBar = {
             EchoJournalToolbar(
                 title = stringResource(R.string.your_echojournal),
                 showSettingsButton = true,
-                onSettingsClick = {
-                }
+                onSettingsClick = onSettingsClick
             )
         },
         floatingActionButton = {
-            RecordMemoActionButtons(
-                modifier = Modifier.padding(bottom = 40.dp),
-                onStartRecording = {
-                },
-                onCancelRecording = {
-                },
-                onFinishRecording = {
-                }
+            EchoJournalFab(
+                modifier = Modifier.padding(bottom = 48.dp),
+                onClick = onClickFab
             )
         }
     ) { paddingValues ->
-        val menuWidth = LocalConfiguration.current.screenWidthDp.dp - 32.dp
-
-        var isMoodsChipClick by remember { mutableStateOf(false) }
-        var isTopicsChipClick by remember { mutableStateOf(false) }
-
         when (state) {
-            MemoOverviewState.Empty -> EmptyStateScreen(Modifier.fillMaxSize())
+            is MemoOverviewState.Empty -> EmptyStateScreen(Modifier.fillMaxSize())
             is MemoOverviewState.VoiceMemos -> {
+                val menuWidth = LocalConfiguration.current.screenWidthDp.dp - 32.dp
+
+                var isMoodsChipClick by remember { mutableStateOf(false) }
+                var isTopicsChipClick by remember { mutableStateOf(false) }
+
                 LazyColumn(
                     modifier = Modifier.padding(paddingValues),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -297,20 +316,18 @@ fun MemoOverviewScreen(
                         }
                     }
 
-                    state.memos.map {
+                    state.memos.map { memo ->
                         item(contentType = "Day") {
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                text = it.key.toString(),
+                                text = memo.key.toString(),
                                 modifier = Modifier.padding(top = 12.dp),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
 
-                        items(
-                            items = it.value
-                        ) {
+                        items(items = memo.value, key = { it.id }) {
                             Row(
                                 modifier = Modifier.fillParentMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -425,7 +442,12 @@ private fun MemoOverviewScreenPreview() {
             onSelectMood = {},
             onClearTopic = {},
             onSelectTopic = {},
-            onFabClick = {}
+            onSettingsClick = {},
+            cancelRecording = {},
+            pauseRecording = {},
+            finishRecording = {},
+            startRecording = {},
+            onClickFab = {}
         )
     }
 }

@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clarkelamothe.echojournal.core.domain.Mood
 import com.clarkelamothe.echojournal.core.domain.VoiceMemo
+import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerState
 import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +28,7 @@ class MemoOverviewViewModel(
 
     private val selectedMoods = MutableStateFlow(emptyList<Mood>())
     private val selectedTopics = MutableStateFlow(emptyList<String>())
+    private val showBottomSheet = MutableStateFlow(false)
 
     private val eventChannel = Channel<MemoOverviewEvent>()
     val events = eventChannel.receiveAsFlow()
@@ -35,17 +37,24 @@ class MemoOverviewViewModel(
         combine(
             repository.getAll(),
             selectedMoods,
-            selectedTopics
-        ) { memos, selectedMoods, selectedTopics ->
+            selectedTopics,
+            showBottomSheet,
+        ) { memos, selectedMoods, selectedTopics, showBottomSheet ->
             state =
                 if (memos.isEmpty()) {
-                    MemoOverviewState.Empty
+                    MemoOverviewState.Empty(
+                        showBottomSheet,
+                        bottomSheetTitle = "Recording your memories...",
+                        bottomSheetTime = "01:30:45",
+                        bottomSheetState = PlayerState.Idle,
+                    )
                 } else {
                     (state as MemoOverviewState.VoiceMemos).copy(
                         moodChipLabel = moodLabel(),
                         topicChipLabel = topicsLabel(),
                         selectedMoods = selectedMoods,
-                        selectedTopics = selectedTopics
+                        selectedTopics = selectedTopics,
+                        showBottomSheet = showBottomSheet
                     )
                 }
         }.launchIn(viewModelScope)
@@ -98,10 +107,23 @@ class MemoOverviewViewModel(
             }
         }
     }
+
+    fun showBottomSheet(show: Boolean) = showBottomSheet.update { show }
 }
 
 sealed interface MemoOverviewState {
-    data object Empty : MemoOverviewState
+    val showBottomSheet: Boolean
+    val bottomSheetTitle: String
+    val bottomSheetTime: String
+    val bottomSheetState: PlayerState
+
+    data class Empty(
+        override val showBottomSheet: Boolean,
+        override val bottomSheetTitle: String,
+        override val bottomSheetTime: String,
+        override val bottomSheetState: PlayerState
+    ) : MemoOverviewState
+
     data class VoiceMemos(
         val moodChipLabel: String = "",
         val topicChipLabel: String = "",
@@ -109,6 +131,10 @@ sealed interface MemoOverviewState {
         val selectedMoods: List<Mood> = emptyList(),
         val topics: List<String> = listOf(""),
         val selectedTopics: List<String> = emptyList(),
-        val memos: Map<LocalDateTime, List<VoiceMemo>> = emptyMap()
+        val memos: Map<LocalDateTime, List<VoiceMemo>> = emptyMap(),
+        override val showBottomSheet: Boolean = false,
+        override val bottomSheetTitle: String = "Recording your memories...",
+        override val bottomSheetTime: String = "01:30:46",
+        override val bottomSheetState: PlayerState = PlayerState.Idle,
     ) : MemoOverviewState
 }
