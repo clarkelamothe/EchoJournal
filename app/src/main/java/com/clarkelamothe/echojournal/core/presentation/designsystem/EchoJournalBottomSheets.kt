@@ -36,7 +36,7 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Surfac
 @Composable
 fun RecordingBottomSheet(
     modifier: Modifier = Modifier,
-    state: PlayerState,
+    state: RecordingState,
     title: String,
     elapsedTime: String = "",
     show: Boolean,
@@ -81,77 +81,97 @@ fun RecordingBottomSheet(
             )
             Spacer(Modifier.height(50.dp))
 
-            Row(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = onCancel,
-                    modifier = Modifier
-                        .background(
-                            color = MaterialTheme.colorScheme.errorContainer,
-                            shape = CircleShape
-                        )
-                        .size(48.dp)
-                ) {
-                    Icon(
-                        imageVector = CloseIcon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onErrorContainer
-                    )
-                }
-
-                IconButton(
-                    onClick = {
-                        when (state) {
-                            PlayerState.Idle -> startRecording()
-                            PlayerState.Playing -> finishRecording()
-                            PlayerState.Paused -> startRecording()
-                        }
-                    },
-                    modifier = Modifier
-                        .shadow(
-                            elevation = 8.dp,
-                            shape = CircleShape,
-                            spotColor = MaterialTheme.colorScheme.primary
-                        )
-                        .background(
-                            brush = ButtonGradient,
-                            shape = CircleShape
-                        )
-                        .size(72.dp)
-                ) {
-                    Icon(
-                        imageVector = when (state) {
-                            PlayerState.Idle -> MicIcon
-                            PlayerState.Playing -> CheckIcon
-                            PlayerState.Paused -> MicIcon
-                        },
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
-
-                IconButton(
-                    onClick = pauseRecording,
-                    modifier = Modifier
-                        .background(
-                            color = SurfaceTint.copy(alpha = 0.12f),
-                            shape = CircleShape
-                        )
-                        .size(48.dp)
-                ) {
-                    Icon(
-                        imageVector = PauseIcon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
+            VoiceRecorder(
+                state = state,
+                startRecording = startRecording,
+                pauseRecording = pauseRecording,
+                finishRecording = finishRecording,
+                cancelRecording = onCancel
+            )
             Spacer(Modifier.height(42.dp))
+        }
+    }
+}
+
+enum class RecordingState {
+    Recording,
+    Paused
+}
+
+@Composable
+private fun VoiceRecorder(
+    state: RecordingState,
+    startRecording: () -> Unit,
+    pauseRecording: () -> Unit,
+    finishRecording: () -> Unit,
+    cancelRecording: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(
+            onClick = cancelRecording,
+            modifier = Modifier
+                .background(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    shape = CircleShape
+                )
+                .size(48.dp)
+        ) {
+            Icon(
+                imageVector = CloseIcon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onErrorContainer
+            )
+        }
+
+        IconButton(
+            onClick = {
+                when (state) {
+                    RecordingState.Recording -> finishRecording()
+                    RecordingState.Paused -> startRecording()
+                }
+            },
+            modifier = Modifier
+                .shadow(
+                    elevation = 8.dp,
+                    shape = CircleShape,
+                    spotColor = MaterialTheme.colorScheme.primary
+                )
+                .background(
+                    brush = ButtonGradient,
+                    shape = CircleShape
+                )
+                .size(72.dp)
+        ) {
+            Icon(
+                imageVector = when (state) {
+                    RecordingState.Recording -> CheckIcon
+                    RecordingState.Paused -> MicIcon
+                },
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
+        }
+
+        IconButton(
+            onClick = pauseRecording,
+            modifier = Modifier
+                .background(
+                    color = SurfaceTint.copy(alpha = 0.12f),
+                    shape = CircleShape
+                )
+                .size(48.dp)
+        ) {
+            Icon(
+                imageVector = PauseIcon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }

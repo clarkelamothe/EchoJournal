@@ -52,6 +52,7 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.MoodIconsRow
 import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerBar
 import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerState
 import com.clarkelamothe.echojournal.core.presentation.designsystem.RecordingBottomSheet
+import com.clarkelamothe.echojournal.core.presentation.designsystem.RecordingState
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.CheckIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.CloseIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.ExcitedIcon
@@ -94,7 +95,7 @@ fun MemoOverviewScreenRoot(
         )
 
         RecordingBottomSheet(
-            state = PlayerState.Idle,
+            state = RecordingState.Recording,
             title = state.bottomSheetTitle,
             elapsedTime = state.bottomSheetTime,
             show = state.showBottomSheet,
