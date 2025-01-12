@@ -8,6 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clarkelamothe.echojournal.core.domain.Mood
 import com.clarkelamothe.echojournal.core.domain.VoiceMemo
+import com.clarkelamothe.echojournal.memo.MemoModule
+import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -16,7 +18,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import java.time.LocalDateTime
 
-class MemoOverviewViewModel : ViewModel() {
+class MemoOverviewViewModel(
+) : ViewModel() {
     private val initialTopic = listOf("Work", "Friends", "Family", "Love", "Surprise")
 
     var state by mutableStateOf(MemoOverviewState(topics = initialTopic))

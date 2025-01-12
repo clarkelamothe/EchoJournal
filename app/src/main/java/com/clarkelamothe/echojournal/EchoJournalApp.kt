@@ -1,16 +1,18 @@
 package com.clarkelamothe.echojournal
 
 import android.app.Application
-import com.clarkelamothe.echojournal.di.AppModule
-import com.clarkelamothe.echojournal.di.AppModuleImpl
+import com.clarkelamothe.echojournal.core.database.EchoJournalDatabase
+import com.clarkelamothe.echojournal.memo.MemoModule
 
 class EchoJournalApp : Application() {
     override fun onCreate() {
         super.onCreate()
-        appModule = AppModuleImpl(this)
+        db = EchoJournalDatabase.db(this)
+        memoModule = MemoModule()
     }
 
     companion object {
-        lateinit var appModule: AppModule
+        lateinit var db: EchoJournalDatabase
+        lateinit var memoModule: MemoModule
     }
 }
