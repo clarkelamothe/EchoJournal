@@ -1,5 +1,8 @@
 package com.clarkelamothe.echojournal.memo
 
+import android.content.Context
+import com.clarkelamothe.echojournal.memo.data.AudioPlayerImpl
+import com.clarkelamothe.echojournal.memo.data.AudioRecorderImpl
 import com.clarkelamothe.echojournal.memo.data.VoiceMemoRepositoryImpl
 import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
 
@@ -10,5 +13,7 @@ class MemoModule {
 
     companion object {
         lateinit var voiceMemoRepository: VoiceMemoRepository
+        fun player(context: Context) = AudioPlayerImpl(context)
+        fun recorder(context: Context) = AudioRecorderImpl(context)
     }
 }

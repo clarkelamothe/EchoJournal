@@ -1,6 +1,7 @@
 package com.clarkelamothe.echojournal
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -26,10 +27,14 @@ fun NavigationRoot(
             startDestination = Routes.MemoOverview
         ) {
             composable<Routes.MemoOverview> {
+                val context = LocalContext.current
+
                 val viewModel = viewModel<MemoOverviewViewModel>(
                     factory = viewModelFactory {
                         MemoOverviewViewModel(
-                            MemoModule.voiceMemoRepository
+                            MemoModule.voiceMemoRepository,
+                            MemoModule.player(context),
+                            MemoModule.recorder(context)
                         )
                     }
                 )

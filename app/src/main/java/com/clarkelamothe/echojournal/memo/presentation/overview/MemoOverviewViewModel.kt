@@ -9,6 +9,8 @@ import androidx.lifecycle.viewModelScope
 import com.clarkelamothe.echojournal.core.domain.Mood
 import com.clarkelamothe.echojournal.core.domain.VoiceMemo
 import com.clarkelamothe.echojournal.core.presentation.designsystem.RecordingState
+import com.clarkelamothe.echojournal.memo.domain.AudioPlayer
+import com.clarkelamothe.echojournal.memo.domain.AudioRecorder
 import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +21,9 @@ import kotlinx.coroutines.flow.update
 import java.time.LocalDateTime
 
 class MemoOverviewViewModel(
-    repository: VoiceMemoRepository
+    repository: VoiceMemoRepository,
+    private val player: AudioPlayer,
+    private val recorder: AudioRecorder
 ) : ViewModel() {
     private val initialTopic = listOf("Work", "Friends", "Family", "Love", "Surprise")
 
@@ -105,8 +109,9 @@ class MemoOverviewViewModel(
         }
     }
 
-    fun showBottomSheet(show: Boolean) =
+    fun showBottomSheet(show: Boolean) {
         voiceRecorderState.update { VoiceRecorderState(showBottomSheet = show) }
+    }
 }
 
 sealed interface MemoOverviewState {
