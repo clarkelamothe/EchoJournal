@@ -12,8 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.clarkelamothe.echojournal.R
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.EmptyIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.EchoJournalTheme
 
@@ -33,13 +35,13 @@ fun EmptyStateScreen(
         )
         Spacer(Modifier.height(34.dp))
         Text(
-            text = "No Entries",
+            text = stringResource(R.string.no_entries),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(Modifier.height(6.dp))
         Text(
-            text = "Start recording your first Echo ",
+            text = stringResource(R.string.start_recording_your_first_echo),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

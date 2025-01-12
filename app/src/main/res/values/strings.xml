@@ -10,4 +10,6 @@
     <string name="add_title">Add Title…</string>
     <string name="add_description">Add Description…</string>
     <string name="add_topic">Topic</string>
+    <string name="start_recording_your_first_echo">Start recording your first Echo</string>
+    <string name="no_entries">No Entries</string>
 </resources>
