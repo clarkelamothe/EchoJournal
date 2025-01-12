@@ -37,7 +37,7 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Surfac
 fun RecordingBottomSheet(
     modifier: Modifier = Modifier,
     state: RecordingState,
-    title: String,
+    title: String = "",
     elapsedTime: String = "",
     show: Boolean,
     onDismissRequest: () -> Unit,

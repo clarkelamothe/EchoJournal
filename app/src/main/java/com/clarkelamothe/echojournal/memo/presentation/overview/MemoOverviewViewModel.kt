@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clarkelamothe.echojournal.core.domain.Mood
 import com.clarkelamothe.echojournal.core.domain.VoiceMemo
-import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerState
+import com.clarkelamothe.echojournal.core.presentation.designsystem.RecordingState
 import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +28,7 @@ class MemoOverviewViewModel(
 
     private val selectedMoods = MutableStateFlow(emptyList<Mood>())
     private val selectedTopics = MutableStateFlow(emptyList<String>())
-    private val showBottomSheet = MutableStateFlow(false)
+    private val voiceRecorderState = MutableStateFlow(VoiceRecorderState())
 
     private val eventChannel = Channel<MemoOverviewEvent>()
     val events = eventChannel.receiveAsFlow()
@@ -38,15 +38,12 @@ class MemoOverviewViewModel(
             repository.getAll(),
             selectedMoods,
             selectedTopics,
-            showBottomSheet,
-        ) { memos, selectedMoods, selectedTopics, showBottomSheet ->
+            voiceRecorderState,
+        ) { memos, selectedMoods, selectedTopics, voiceRecorder ->
             state =
                 if (memos.isEmpty()) {
                     MemoOverviewState.Empty(
-                        showBottomSheet,
-                        bottomSheetTitle = "Recording your memories...",
-                        bottomSheetTime = "01:30:45",
-                        bottomSheetState = PlayerState.Idle,
+                        voiceRecorderState = voiceRecorder
                     )
                 } else {
                     (state as MemoOverviewState.VoiceMemos).copy(
@@ -54,7 +51,7 @@ class MemoOverviewViewModel(
                         topicChipLabel = topicsLabel(),
                         selectedMoods = selectedMoods,
                         selectedTopics = selectedTopics,
-                        showBottomSheet = showBottomSheet
+                        voiceRecorderState = voiceRecorder
                     )
                 }
         }.launchIn(viewModelScope)
@@ -108,20 +105,15 @@ class MemoOverviewViewModel(
         }
     }
 
-    fun showBottomSheet(show: Boolean) = showBottomSheet.update { show }
+    fun showBottomSheet(show: Boolean) =
+        voiceRecorderState.update { VoiceRecorderState(showBottomSheet = show) }
 }
 
 sealed interface MemoOverviewState {
-    val showBottomSheet: Boolean
-    val bottomSheetTitle: String
-    val bottomSheetTime: String
-    val bottomSheetState: PlayerState
+    val voiceRecorderState: VoiceRecorderState
 
     data class Empty(
-        override val showBottomSheet: Boolean,
-        override val bottomSheetTitle: String,
-        override val bottomSheetTime: String,
-        override val bottomSheetState: PlayerState
+        override val voiceRecorderState: VoiceRecorderState = VoiceRecorderState()
     ) : MemoOverviewState
 
     data class VoiceMemos(
@@ -132,9 +124,18 @@ sealed interface MemoOverviewState {
         val topics: List<String> = listOf(""),
         val selectedTopics: List<String> = emptyList(),
         val memos: Map<LocalDateTime, List<VoiceMemo>> = emptyMap(),
-        override val showBottomSheet: Boolean = false,
-        override val bottomSheetTitle: String = "Recording your memories...",
-        override val bottomSheetTime: String = "01:30:46",
-        override val bottomSheetState: PlayerState = PlayerState.Idle,
+        override val voiceRecorderState: VoiceRecorderState = VoiceRecorderState()
     ) : MemoOverviewState
+}
+
+data class VoiceRecorderState(
+    val showBottomSheet: Boolean = false,
+    val state: RecordingState = RecordingState.Recording,
+    val elapsedTime: String = "0:00:00",
+    val title: String = state.getTitle()
+)
+
+fun RecordingState.getTitle() = when (this) {
+    RecordingState.Recording -> "Recording your memories..."
+    RecordingState.Paused -> "Recording paused"
 }
