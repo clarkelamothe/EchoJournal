@@ -48,3 +48,7 @@ val MicIcon: ImageVector
 val AiIcon: ImageVector
     @Composable
     get() = ImageVector.vectorResource(R.drawable.ic_ai)
+
+val EmptyIcon: ImageVector
+    @Composable
+    get() = ImageVector.vectorResource(R.drawable.ic_empty_screen)
