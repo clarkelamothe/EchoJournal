@@ -41,7 +41,7 @@ fun RecordingBottomSheet(
     elapsedTime: String = "",
     show: Boolean,
     onDismissRequest: () -> Unit,
-    onCancel: () -> Unit,
+    cancelRecording: () -> Unit,
     startRecording: () -> Unit,
     pauseRecording: () -> Unit,
     finishRecording: () -> Unit
@@ -86,7 +86,7 @@ fun RecordingBottomSheet(
                 startRecording = startRecording,
                 pauseRecording = pauseRecording,
                 finishRecording = finishRecording,
-                cancelRecording = onCancel
+                cancelRecording = cancelRecording
             )
             Spacer(Modifier.height(42.dp))
         }

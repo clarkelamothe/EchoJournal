@@ -2,6 +2,9 @@
 
 package com.clarkelamothe.echojournal.memo.presentation.overview
 
+import android.Manifest.permission.RECORD_AUDIO
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -72,6 +75,13 @@ fun MemoOverviewScreenRoot(
     onSettingsClick: () -> Unit,
     onVoiceMemoRecorded: () -> Unit,
 ) {
+    var audioPermissionGranted by remember { mutableStateOf(false) }
+    val audioPermissionResultLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) {
+        audioPermissionGranted = it
+    }
+
     ObserveAsEvents(viewModel.events) {
         when (it) {
             MemoOverviewEvent.VoiceMemoRecorded -> onVoiceMemoRecorded()
@@ -86,11 +96,12 @@ fun MemoOverviewScreenRoot(
             onClearTopic = ::onClearTopic,
             onSelectTopic = ::onSelect,
             onSettingsClick = onSettingsClick,
-            cancelRecording = {},
-            pauseRecording = {},
-            finishRecording = {},
-            startRecording = {},
-            onClickFab = { showBottomSheet(true) }
+            onClickFab = {
+                if (!audioPermissionGranted) {
+                    audioPermissionResultLauncher.launch(RECORD_AUDIO)
+                }
+                showBottomSheet(audioPermissionGranted)
+            }
         )
 
         RecordingBottomSheet(
@@ -99,7 +110,7 @@ fun MemoOverviewScreenRoot(
             elapsedTime = state.voiceRecorderState.elapsedTime,
             show = state.voiceRecorderState.showBottomSheet,
             onDismissRequest = { showBottomSheet(false) },
-            onCancel = { },
+            cancelRecording = { },
             startRecording = { },
             pauseRecording = { },
             finishRecording = { }
@@ -116,10 +127,6 @@ fun MemoOverviewScreen(
     onSelectMood: (Mood) -> Unit,
     onClearTopic: () -> Unit,
     onSelectTopic: (String) -> Unit,
-    cancelRecording: () -> Unit,
-    pauseRecording: () -> Unit,
-    finishRecording: () -> Unit,
-    startRecording: () -> Unit,
     onSettingsClick: () -> Unit,
     onClickFab: () -> Unit
 ) {
@@ -443,10 +450,6 @@ private fun MemoOverviewScreenPreview() {
             onClearTopic = {},
             onSelectTopic = {},
             onSettingsClick = {},
-            cancelRecording = {},
-            pauseRecording = {},
-            finishRecording = {},
-            startRecording = {},
             onClickFab = {}
         )
     }
