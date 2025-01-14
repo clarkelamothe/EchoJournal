@@ -45,7 +45,7 @@ class MemoOverviewViewModel(
     private val selectedTopics = MutableStateFlow(emptyList<String>())
     private val voiceRecorderState = MutableStateFlow(VoiceRecorderState())
     private val shouldStartTimer = MutableStateFlow(false)
-    private val shouldPauseTimer = MutableStateFlow(false)
+    private val lastEmitted = MutableStateFlow(Duration.ZERO)
 
     private val eventChannel = Channel<MemoOverviewEvent>()
     val events = eventChannel.receiveAsFlow()
@@ -75,9 +75,13 @@ class MemoOverviewViewModel(
 
         shouldStartTimer
             .flatMapLatest {
-                tickerFlow(it)
+                tickerFlow(
+                    start = it,
+                    initialDelay = lastEmitted.value
+                )
             }
             .onEach {
+                lastEmitted.value = it
                 voiceRecorderState.update { recorderState ->
                     val init = LocalTime.of(0, 0, 0).plusSeconds(it.inWholeSeconds)
                     val formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
@@ -144,11 +148,15 @@ class MemoOverviewViewModel(
 
     fun startRecording() {
         onStartTimer(true)
-        shouldPauseTimer.update { false }
+        voiceRecorderState.update {
+            it.copy(
+                state = RecordingState.Recording
+            )
+        }
     }
 
     fun pauseRecording() {
-        shouldPauseTimer.update { true }
+        onStartTimer(false)
         voiceRecorderState.update { voiceRecorderState ->
             with(RecordingState.Paused) {
                 voiceRecorderState.copy(
@@ -161,6 +169,7 @@ class MemoOverviewViewModel(
 
     fun stopRecording() {
         onStartTimer(false)
+        lastEmitted.update { Duration.ZERO }
         voiceRecorderState.update {
             it.copy(showBottomSheet = false)
         }
@@ -169,6 +178,7 @@ class MemoOverviewViewModel(
     fun finishRecording() {
         onStartTimer(false)
         showBottomSheet(false)
+        lastEmitted.update { Duration.ZERO }
         viewModelScope.launch {
             eventChannel.send(MemoOverviewEvent.VoiceMemoRecorded)
         }
