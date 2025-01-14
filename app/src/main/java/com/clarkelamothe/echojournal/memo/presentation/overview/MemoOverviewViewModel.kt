@@ -45,7 +45,9 @@ class MemoOverviewViewModel(
     private val selectedTopics = MutableStateFlow(emptyList<String>())
     private val voiceRecorderState = MutableStateFlow(VoiceRecorderState())
     private val shouldStartTimer = MutableStateFlow(false)
+    private val observeAmplitudes = MutableStateFlow(false)
     private val lastEmitted = MutableStateFlow(Duration.ZERO)
+    private val amplitudes = MutableStateFlow<List<Int>>(emptyList())
 
     private val eventChannel = Channel<MemoOverviewEvent>()
     val events = eventChannel.receiveAsFlow()
@@ -64,8 +66,8 @@ class MemoOverviewViewModel(
                     )
                 } else {
                     (state as MemoOverviewState.VoiceMemos).copy(
-                        moodChipLabel = moodLabel(),
-                        topicChipLabel = topicsLabel(),
+                        moodChipLabel = moodLabel(selectedMoods),
+                        topicChipLabel = topicsLabel(selectedTopics),
                         selectedMoods = selectedMoods,
                         selectedTopics = selectedTopics,
                         voiceRecorderState = voiceRecorder
@@ -75,6 +77,7 @@ class MemoOverviewViewModel(
 
         shouldStartTimer
             .flatMapLatest {
+                observeAmplitudes.update { it }
                 tickerFlow(
                     start = it,
                     initialDelay = lastEmitted.value
@@ -82,37 +85,39 @@ class MemoOverviewViewModel(
             }
             .onEach {
                 lastEmitted.value = it
+
                 voiceRecorderState.update { recorderState ->
                     val init = LocalTime.of(0, 0, 0).plusSeconds(it.inWholeSeconds)
                     val formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
-
+                    println(recorder.maxAmp())
                     recorderState.copy(
-                        elapsedTime = init.format(formatter)
+                        elapsedTime = init.format(formatter),
+                        amplitudes = recorderState.amplitudes + recorder.maxAmp()
                     )
                 }
             }
             .launchIn(viewModelScope)
     }
 
-    private fun moodLabel() =
-        if (selectedMoods.value.isEmpty() || selectedMoods.value.size == Mood.entries.size)
+    private fun moodLabel(selectedMoods: List<Mood>) =
+        if (selectedMoods.isEmpty() || selectedMoods.size == Mood.entries.size)
             "All Moods"
         else {
-            selectedMoods.value.joinToString(separator = ", ") {
+            selectedMoods.joinToString(separator = ", ") {
                 it.title
             }
         }
 
-    private fun topicsLabel() = if (
-        selectedTopics.value.isEmpty() || selectedTopics.value.size == initialTopic.size
+    private fun topicsLabel(selectedTopics: List<String>) = if (
+        selectedTopics.isEmpty() || selectedTopics.size == initialTopic.size
     ) "All Topics" else {
-        with(selectedTopics.value.take(2)) {
-            if (selectedTopics.value.size < 2) {
+        with(selectedTopics.take(2)) {
+            if (selectedTopics.size < 2) {
                 joinToString(", ") { it }
             } else {
                 joinToString(", ") {
                     it
-                } + " +${initialTopic.size - selectedTopics.value.size}"
+                } + " +${initialTopic.size - selectedTopics.size}"
             }
         }
     }
@@ -147,11 +152,12 @@ class MemoOverviewViewModel(
         voiceRecorderState.update { VoiceRecorderState(showBottomSheet = show) }
     }
 
-    fun startRecording() {
+    private fun startRecording() {
         onStartTimer(true)
         voiceRecorderState.update {
             it.copy(
-                state = RecordingState.Recording
+                state = RecordingState.Recording,
+                title = RecordingState.Recording.getTitle()
             )
         }
         recorder.start("memo")
@@ -191,6 +197,14 @@ class MemoOverviewViewModel(
 
     fun resumeRecording() {
         onStartTimer(true)
+        voiceRecorderState.update { voiceRecorderState ->
+            with(RecordingState.Recording) {
+                voiceRecorderState.copy(
+                    state = this,
+                    title = getTitle()
+                )
+            }
+        }
         recorder.resume()
     }
 
@@ -235,7 +249,8 @@ data class VoiceRecorderState(
     val showBottomSheet: Boolean = false,
     val state: RecordingState = RecordingState.Recording,
     val elapsedTime: String = "0:00:00",
-    val title: String = state.getTitle()
+    val title: String = state.getTitle(),
+    val amplitudes: List<Float> = emptyList()
 )
 
 fun RecordingState.getTitle() = when (this) {

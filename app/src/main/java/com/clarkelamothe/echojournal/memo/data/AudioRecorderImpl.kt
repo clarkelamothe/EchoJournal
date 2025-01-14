@@ -30,6 +30,8 @@ class AudioRecorderImpl(
         }
     }
 
+    override fun maxAmp() = recorder?.maxAmplitude?.toFloat() ?: 0f
+
     override fun pause() {
         recorder?.pause()
     }

@@ -1,5 +1,9 @@
 package com.clarkelamothe.echojournal.core.presentation.designsystem
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,9 +23,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -30,6 +42,7 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.components.i
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.MicIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.PauseIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.ButtonGradient
+import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Primary95
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.SurfaceTint
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,7 +54,6 @@ fun RecordingBottomSheet(
     elapsedTime: String = "",
     onDismissRequest: () -> Unit,
     cancelRecording: () -> Unit,
-    startRecording: () -> Unit,
     pauseRecording: () -> Unit,
     finishRecording: () -> Unit,
     resumeRecording: () -> Unit
@@ -78,17 +90,16 @@ fun RecordingBottomSheet(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodySmall
         )
-        Spacer(Modifier.height(50.dp))
+        Spacer(Modifier.height(30.dp))
 
         VoiceRecorder(
             state = state,
-            startRecording = startRecording,
             pauseRecording = pauseRecording,
             finishRecording = finishRecording,
             cancelRecording = cancelRecording,
             resumeRecording = resumeRecording
         )
-        Spacer(Modifier.height(42.dp))
+        Spacer(Modifier.height(22.dp))
     }
 }
 
@@ -100,12 +111,43 @@ enum class RecordingState {
 @Composable
 private fun VoiceRecorder(
     state: RecordingState,
-    startRecording: () -> Unit,
     pauseRecording: () -> Unit,
     finishRecording: () -> Unit,
     cancelRecording: () -> Unit,
     resumeRecording: () -> Unit
 ) {
+    var currentAmplitude by remember { mutableFloatStateOf(0f) }
+
+    LaunchedEffect(Unit) {
+        animate(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1000),
+                repeatMode = RepeatMode.Reverse
+            )
+        ) { value, _ ->
+            currentAmplitude = value
+        }
+    }
+
+    val maxScale by remember { mutableFloatStateOf(1.2f) }
+    val minScale by remember { mutableFloatStateOf(0.8f) }
+    val maxAlpha by remember { mutableFloatStateOf(0.3f) }
+    val minAlpha by remember { mutableFloatStateOf(0f) }
+
+    val scale by remember {
+        derivedStateOf {
+            (currentAmplitude * (maxScale - minScale) + minScale).coerceIn(minScale, maxScale)
+        }
+    }
+
+    val rippleAlpha by remember {
+        derivedStateOf {
+            (currentAmplitude * maxAlpha).coerceIn(minAlpha, maxAlpha)
+        }
+    }
+
     Row(
         modifier = Modifier
             .padding(horizontal = 16.dp)
@@ -129,34 +171,55 @@ private fun VoiceRecorder(
             )
         }
 
-        IconButton(
-            onClick = {
-                when (state) {
-                    RecordingState.Recording -> finishRecording()
-                    RecordingState.Paused -> resumeRecording()
-                }
-            },
-            modifier = Modifier
-                .shadow(
-                    elevation = 8.dp,
-                    shape = CircleShape,
-                    spotColor = MaterialTheme.colorScheme.primary
-                )
-                .background(
-                    brush = ButtonGradient,
-                    shape = CircleShape
-                )
-                .size(72.dp)
+        Box(
+            modifier = Modifier.size(120.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = when (state) {
-                    RecordingState.Recording -> CheckIcon
-                    RecordingState.Paused -> MicIcon
+            if (state == RecordingState.Recording) {
+                repeat(2) { index ->
+                    val offsetScale = 1f + (index * 0.3f)
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .scale(scale * offsetScale)
+                            .alpha(rippleAlpha / index)
+                            .background(
+                                color = Primary95,
+                                shape = CircleShape
+                            )
+                    )
+                }
+            }
+
+            IconButton(
+                onClick = {
+                    when (state) {
+                        RecordingState.Recording -> finishRecording()
+                        RecordingState.Paused -> resumeRecording()
+                    }
                 },
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(32.dp)
-            )
+                modifier = Modifier
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = CircleShape,
+                        spotColor = MaterialTheme.colorScheme.primary
+                    )
+                    .background(
+                        brush = ButtonGradient,
+                        shape = CircleShape
+                    )
+                    .size(72.dp)
+            ) {
+                Icon(
+                    imageVector = when (state) {
+                        RecordingState.Recording -> CheckIcon
+                        RecordingState.Paused -> MicIcon
+                    },
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
         }
 
         IconButton(
