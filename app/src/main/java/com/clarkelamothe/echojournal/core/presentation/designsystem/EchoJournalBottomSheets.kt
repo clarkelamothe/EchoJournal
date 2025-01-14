@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,57 +40,58 @@ fun RecordingBottomSheet(
     state: RecordingState,
     title: String = "",
     elapsedTime: String = "",
-    show: Boolean,
     onDismissRequest: () -> Unit,
     cancelRecording: () -> Unit,
     startRecording: () -> Unit,
     pauseRecording: () -> Unit,
     finishRecording: () -> Unit
 ) {
-    if (show) {
-        ModalBottomSheet(
-            modifier = modifier,
-            onDismissRequest = onDismissRequest,
-            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-            containerColor = MaterialTheme.colorScheme.background,
-            tonalElevation = 16.dp,
-            dragHandle = {
-                Box(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .width(32.dp)
-                        .height(4.dp)
-                        .clip(RoundedCornerShape(100.dp))
-                        .background(MaterialTheme.colorScheme.outlineVariant)
-                )
-            }
-        ) {
-            Text(
-                text = title,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.headlineMedium
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = elapsedTime,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall
-            )
-            Spacer(Modifier.height(50.dp))
+    LaunchedEffect(state) {
+        if (state == RecordingState.Recording) startRecording()
+    }
 
-            VoiceRecorder(
-                state = state,
-                startRecording = startRecording,
-                pauseRecording = pauseRecording,
-                finishRecording = finishRecording,
-                cancelRecording = cancelRecording
+    ModalBottomSheet(
+        modifier = modifier,
+        onDismissRequest = onDismissRequest,
+        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        containerColor = MaterialTheme.colorScheme.background,
+        tonalElevation = 16.dp,
+        dragHandle = {
+            Box(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .width(32.dp)
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(100.dp))
+                    .background(MaterialTheme.colorScheme.outlineVariant)
             )
-            Spacer(Modifier.height(42.dp))
         }
+    ) {
+        Text(
+            text = title,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.headlineMedium
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = elapsedTime,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodySmall
+        )
+        Spacer(Modifier.height(50.dp))
+
+        VoiceRecorder(
+            state = state,
+            startRecording = startRecording,
+            pauseRecording = pauseRecording,
+            finishRecording = finishRecording,
+            cancelRecording = cancelRecording
+        )
+        Spacer(Modifier.height(42.dp))
     }
 }
 
@@ -154,12 +156,18 @@ private fun VoiceRecorder(
                     RecordingState.Paused -> MicIcon
                 },
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(32.dp)
             )
         }
 
         IconButton(
-            onClick = pauseRecording,
+            onClick = {
+                when (state) {
+                    RecordingState.Recording -> pauseRecording()
+                    RecordingState.Paused -> finishRecording()
+                }
+            },
             modifier = Modifier
                 .background(
                     color = SurfaceTint.copy(alpha = 0.12f),
@@ -168,9 +176,13 @@ private fun VoiceRecorder(
                 .size(48.dp)
         ) {
             Icon(
-                imageVector = PauseIcon,
+                imageVector = when (state) {
+                    RecordingState.Recording -> PauseIcon
+                    RecordingState.Paused -> CheckIcon
+                },
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
             )
         }
     }

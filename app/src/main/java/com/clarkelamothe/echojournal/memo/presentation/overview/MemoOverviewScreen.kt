@@ -73,7 +73,7 @@ import java.time.LocalDateTime
 fun MemoOverviewScreenRoot(
     viewModel: MemoOverviewViewModel,
     onSettingsClick: () -> Unit,
-    onVoiceMemoRecorded: () -> Unit,
+    onVoiceMemoRecorded: () -> Unit
 ) {
     var audioPermissionGranted by remember { mutableStateOf(false) }
     val audioPermissionResultLauncher = rememberLauncherForActivityResult(
@@ -104,17 +104,21 @@ fun MemoOverviewScreenRoot(
             }
         )
 
-        RecordingBottomSheet(
-            state = state.voiceRecorderState.state,
-            title = state.voiceRecorderState.title,
-            elapsedTime = state.voiceRecorderState.elapsedTime,
-            show = state.voiceRecorderState.showBottomSheet,
-            onDismissRequest = { showBottomSheet(false) },
-            cancelRecording = { },
-            startRecording = { },
-            pauseRecording = { },
-            finishRecording = { }
-        )
+        if (state.voiceRecorderState.showBottomSheet) {
+            RecordingBottomSheet(
+                state = state.voiceRecorderState.state,
+                title = state.voiceRecorderState.title,
+                elapsedTime = state.voiceRecorderState.elapsedTime,
+                onDismissRequest = {
+                    showBottomSheet(false)
+                    stopRecording()
+                },
+                cancelRecording = ::stopRecording,
+                startRecording = ::startRecording,
+                pauseRecording = ::pauseRecording,
+                finishRecording = ::finishRecording
+            )
+        }
     }
 }
 

@@ -1,3 +1,5 @@
+@file:Suppress("OPT_IN_USAGE")
+
 package com.clarkelamothe.echojournal.memo.presentation.overview
 
 import androidx.compose.runtime.getValue
@@ -13,12 +15,21 @@ import com.clarkelamothe.echojournal.memo.domain.AudioPlayer
 import com.clarkelamothe.echojournal.memo.domain.AudioRecorder
 import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 class MemoOverviewViewModel(
     repository: VoiceMemoRepository,
@@ -33,6 +44,8 @@ class MemoOverviewViewModel(
     private val selectedMoods = MutableStateFlow(emptyList<Mood>())
     private val selectedTopics = MutableStateFlow(emptyList<String>())
     private val voiceRecorderState = MutableStateFlow(VoiceRecorderState())
+    private val shouldStartTimer = MutableStateFlow(false)
+    private val shouldPauseTimer = MutableStateFlow(false)
 
     private val eventChannel = Channel<MemoOverviewEvent>()
     val events = eventChannel.receiveAsFlow()
@@ -59,6 +72,22 @@ class MemoOverviewViewModel(
                     )
                 }
         }.launchIn(viewModelScope)
+
+        shouldStartTimer
+            .flatMapLatest {
+                tickerFlow(it)
+            }
+            .onEach {
+                voiceRecorderState.update { recorderState ->
+                    val init = LocalTime.of(0, 0, 0).plusSeconds(it.inWholeSeconds)
+                    val formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+
+                    recorderState.copy(
+                        elapsedTime = init.format(formatter)
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun moodLabel() =
@@ -111,6 +140,55 @@ class MemoOverviewViewModel(
 
     fun showBottomSheet(show: Boolean) {
         voiceRecorderState.update { VoiceRecorderState(showBottomSheet = show) }
+    }
+
+    fun startRecording() {
+        onStartTimer(true)
+        shouldPauseTimer.update { false }
+    }
+
+    fun pauseRecording() {
+        shouldPauseTimer.update { true }
+        voiceRecorderState.update { voiceRecorderState ->
+            with(RecordingState.Paused) {
+                voiceRecorderState.copy(
+                    state = this,
+                    title = getTitle()
+                )
+            }
+        }
+    }
+
+    fun stopRecording() {
+        onStartTimer(false)
+        voiceRecorderState.update {
+            it.copy(showBottomSheet = false)
+        }
+    }
+
+    fun finishRecording() {
+        onStartTimer(false)
+        showBottomSheet(false)
+        viewModelScope.launch {
+            eventChannel.send(MemoOverviewEvent.VoiceMemoRecorded)
+        }
+    }
+
+    private fun onStartTimer(start: Boolean) {
+        shouldStartTimer.update { start }
+    }
+
+    private fun tickerFlow(
+        start: Boolean,
+        period: Duration = 1.seconds,
+        initialDelay: Duration = Duration.ZERO
+    ) = flow {
+        var currentTime = initialDelay
+        while (start) {
+            emit(currentTime)
+            currentTime = currentTime.plus(1.seconds)
+            delay(period)
+        }
     }
 }
 
