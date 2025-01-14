@@ -143,6 +143,7 @@ class MemoOverviewViewModel(
     }
 
     fun showBottomSheet(show: Boolean) {
+        if (show) startRecording()
         voiceRecorderState.update { VoiceRecorderState(showBottomSheet = show) }
     }
 
@@ -153,10 +154,12 @@ class MemoOverviewViewModel(
                 state = RecordingState.Recording
             )
         }
+        recorder.start("memo")
     }
 
     fun pauseRecording() {
         onStartTimer(false)
+        recorder.pause()
         voiceRecorderState.update { voiceRecorderState ->
             with(RecordingState.Paused) {
                 voiceRecorderState.copy(
@@ -173,6 +176,7 @@ class MemoOverviewViewModel(
         voiceRecorderState.update {
             it.copy(showBottomSheet = false)
         }
+        recorder.stop()
     }
 
     fun finishRecording() {
@@ -182,6 +186,12 @@ class MemoOverviewViewModel(
         viewModelScope.launch {
             eventChannel.send(MemoOverviewEvent.VoiceMemoRecorded)
         }
+        recorder.stop()
+    }
+
+    fun resumeRecording() {
+        onStartTimer(true)
+        recorder.resume()
     }
 
     private fun onStartTimer(start: Boolean) {

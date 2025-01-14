@@ -116,7 +116,8 @@ fun MemoOverviewScreenRoot(
                 cancelRecording = ::stopRecording,
                 startRecording = ::startRecording,
                 pauseRecording = ::pauseRecording,
-                finishRecording = ::finishRecording
+                finishRecording = ::finishRecording,
+                resumeRecording = ::resumeRecording
             )
         }
     }

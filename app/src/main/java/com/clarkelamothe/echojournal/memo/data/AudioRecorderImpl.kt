@@ -5,7 +5,6 @@ import android.media.MediaRecorder
 import android.os.Build
 import com.clarkelamothe.echojournal.memo.domain.AudioRecorder
 import java.io.File
-import java.io.FileOutputStream
 
 class AudioRecorderImpl(
     private val context: Context
@@ -18,21 +17,31 @@ class AudioRecorderImpl(
         } else MediaRecorder()
     }
 
-    override fun start(outputFile: File) {
-        createRecorder().apply {
+    override fun start(fileName: String) {
+        val extension = ".mp3"
+        val file = File(context.filesDir, "$fileName$extension").absolutePath
+        recorder = createRecorder().apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-            setOutputFile(FileOutputStream(outputFile).fd)
+            setOutputFile(file)
             prepare()
             start()
-            recorder = this
         }
+    }
+
+    override fun pause() {
+        recorder?.pause()
+    }
+
+    override fun resume() {
+        recorder?.resume()
     }
 
     override fun stop() {
         recorder?.stop()
         recorder?.reset()
+        recorder?.release()
         recorder = null
     }
 }

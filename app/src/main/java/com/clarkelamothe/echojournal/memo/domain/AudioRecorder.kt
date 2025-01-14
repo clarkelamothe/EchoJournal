@@ -1,8 +1,8 @@
 package com.clarkelamothe.echojournal.memo.domain
 
-import java.io.File
-
 interface AudioRecorder {
-    fun start(outputFile: File)
+    fun start(fileName: String)
     fun stop()
+    fun pause()
+    fun resume()
 }

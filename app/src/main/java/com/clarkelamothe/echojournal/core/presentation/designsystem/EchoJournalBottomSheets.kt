@@ -19,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,12 +43,9 @@ fun RecordingBottomSheet(
     cancelRecording: () -> Unit,
     startRecording: () -> Unit,
     pauseRecording: () -> Unit,
-    finishRecording: () -> Unit
+    finishRecording: () -> Unit,
+    resumeRecording: () -> Unit
 ) {
-    LaunchedEffect(state) {
-        if (state == RecordingState.Recording) startRecording()
-    }
-
     ModalBottomSheet(
         modifier = modifier,
         onDismissRequest = onDismissRequest,
@@ -89,7 +85,8 @@ fun RecordingBottomSheet(
             startRecording = startRecording,
             pauseRecording = pauseRecording,
             finishRecording = finishRecording,
-            cancelRecording = cancelRecording
+            cancelRecording = cancelRecording,
+            resumeRecording = resumeRecording
         )
         Spacer(Modifier.height(42.dp))
     }
@@ -106,7 +103,8 @@ private fun VoiceRecorder(
     startRecording: () -> Unit,
     pauseRecording: () -> Unit,
     finishRecording: () -> Unit,
-    cancelRecording: () -> Unit
+    cancelRecording: () -> Unit,
+    resumeRecording: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -135,7 +133,7 @@ private fun VoiceRecorder(
             onClick = {
                 when (state) {
                     RecordingState.Recording -> finishRecording()
-                    RecordingState.Paused -> startRecording()
+                    RecordingState.Paused -> resumeRecording()
                 }
             },
             modifier = Modifier
