@@ -8,9 +8,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clarkelamothe.echojournal.core.domain.MoodBM
 import com.clarkelamothe.echojournal.core.domain.VoiceMemo
 import com.clarkelamothe.echojournal.core.presentation.designsystem.RecordingState
+import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
 import com.clarkelamothe.echojournal.memo.domain.AudioPlayer
 import com.clarkelamothe.echojournal.memo.domain.AudioRecorder
 import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
@@ -42,7 +42,7 @@ class MemoOverviewViewModel(
     var state by mutableStateOf<MemoOverviewState>(MemoOverviewState.VoiceMemos(topics = initialTopic))
         private set
 
-    private val selectedMoods = MutableStateFlow(emptyList<MoodBM>())
+    private val selectedMoods = MutableStateFlow(emptyList<MoodVM>())
     private val selectedTopics = MutableStateFlow(emptyList<String>())
     private val voiceRecorderState = MutableStateFlow(VoiceRecorderState())
     private val shouldStartTimer = MutableStateFlow(false)
@@ -69,7 +69,7 @@ class MemoOverviewViewModel(
                     (state as MemoOverviewState.VoiceMemos).copy(
                         moodChipLabel = moodLabel(selectedMoods),
                         topicChipLabel = topicsLabel(selectedTopics),
-                        selectedMoodBMS = selectedMoods,
+                        selectedMood = selectedMoods,
                         selectedTopics = selectedTopics,
                         voiceRecorderState = voiceRecorder
                     )
@@ -100,11 +100,11 @@ class MemoOverviewViewModel(
             .launchIn(viewModelScope)
     }
 
-    private fun moodLabel(selectedMoodBMS: List<MoodBM>) =
-        if (selectedMoodBMS.isEmpty() || selectedMoodBMS.size == MoodBM.entries.size)
+    private fun moodLabel(selectedMoods: List<MoodVM>) =
+        if (selectedMoods.isEmpty() || selectedMoods.size == MoodVM.entries.size)
             "All Moods"
         else {
-            selectedMoodBMS.joinToString(separator = ", ") {
+            selectedMoods.joinToString(separator = ", ") {
                 it.title
             }
         }
@@ -125,13 +125,13 @@ class MemoOverviewViewModel(
 
     fun onClearMood() = selectedMoods.update { emptyList() }
     fun onClearTopic() = selectedTopics.update { emptyList() }
-    fun onSelect(moodBM: MoodBM) = selectedMoods.update {
+    fun onSelect(mood: MoodVM) = selectedMoods.update {
         it.toMutableStateList().apply {
-            if (contains(moodBM)) {
-                remove(moodBM)
+            if (contains(mood)) {
+                remove(mood)
             } else {
-                add(moodBM)
-                if (size == MoodBM.entries.size) removeAll(this)
+                add(mood)
+                if (size == MoodVM.entries.size) removeAll(this)
             }
         }
     }
@@ -237,8 +237,8 @@ sealed interface MemoOverviewState {
     data class VoiceMemos(
         val moodChipLabel: String = "",
         val topicChipLabel: String = "",
-        val moodBMS: List<MoodBM> = MoodBM.entries,
-        val selectedMoodBMS: List<MoodBM> = emptyList(),
+        val moods: List<MoodVM> = MoodVM.entries,
+        val selectedMood: List<MoodVM> = emptyList(),
         val topics: List<String> = listOf(""),
         val selectedTopics: List<String> = emptyList(),
         val memos: Map<LocalDateTime, List<VoiceMemo>> = emptyMap(),

@@ -36,8 +36,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -67,6 +69,7 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.EchoJo
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Neutral25
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Neutral95
 import com.clarkelamothe.echojournal.core.presentation.ui.ObserveAsEvents
+import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
 import java.time.LocalDateTime
 
 @Composable
@@ -130,7 +133,7 @@ fun MemoOverviewScreenRoot(
 fun MemoOverviewScreen(
     state: MemoOverviewState,
     onClearMood: () -> Unit,
-    onSelectMood: (MoodBM) -> Unit,
+    onSelectMood: (MoodVM) -> Unit,
     onClearTopic: () -> Unit,
     onSelectTopic: (String) -> Unit,
     onSettingsClick: () -> Unit,
@@ -169,7 +172,7 @@ fun MemoOverviewScreen(
                         ) {
                             // Moods Chip
                             EchoJournalChip(
-                                selected = isMoodsChipClick || state.selectedMoodBMS.isNotEmpty(),
+                                selected = isMoodsChipClick || state.selectedMood.isNotEmpty(),
                                 onClick = {
                                     isMoodsChipClick = !isMoodsChipClick
                                     isTopicsChipClick = false
@@ -186,19 +189,11 @@ fun MemoOverviewScreen(
                                 },
                                 avatar = {
                                     MoodIconsRow(
-                                        icons = state.selectedMoodBMS.map {
-                                            when (it) {
-                                                MoodBM.Stressed -> StressedIcon
-                                                MoodBM.Sad -> SadIcon
-                                                MoodBM.Neutral -> NeutralIcon
-                                                MoodBM.Peaceful -> PeacefulIcon
-                                                MoodBM.Excited -> ExcitedIcon
-                                            }
-                                        }
+                                        icons = state.selectedMood.map { ImageVector.vectorResource(it.icon) }
                                     )
                                 },
                                 trailingIcon = {
-                                    if (state.selectedMoodBMS.isNotEmpty() && state.moodBMS.size != state.selectedMoodBMS.size) {
+                                    if (state.selectedMood.isNotEmpty() && state.moods.size != state.selectedMood.size) {
                                         Icon(
                                             imageVector = CloseIcon,
                                             contentDescription = null,
@@ -251,11 +246,11 @@ fun MemoOverviewScreen(
                             shape = RoundedCornerShape(10.dp),
                             containerColor = MaterialTheme.colorScheme.surface
                         ) {
-                            state.moodBMS.forEach { item ->
+                            state.moods.forEach { item ->
                                 key(item) { item.hashCode() }
 
                                 AnimatedContent(
-                                    targetState = state.selectedMoodBMS.contains(item),
+                                    targetState = state.selectedMood.contains(item),
                                     label = "Animate the selected item"
                                 ) { isMoodSelected ->
                                     DropdownItem(
@@ -264,13 +259,7 @@ fun MemoOverviewScreen(
                                         leadingIcon = {
                                             Icon(
                                                 tint = Color.Unspecified,
-                                                imageVector = when (item) {
-                                                    MoodBM.Stressed -> StressedIcon
-                                                    MoodBM.Sad -> SadIcon
-                                                    MoodBM.Neutral -> NeutralIcon
-                                                    MoodBM.Peaceful -> PeacefulIcon
-                                                    MoodBM.Excited -> ExcitedIcon
-                                                },
+                                                imageVector = ImageVector.vectorResource(item.icon),
                                                 contentDescription = null
                                             )
                                         },
@@ -433,8 +422,8 @@ private fun MemoOverviewScreenPreview() {
             state = MemoOverviewState.VoiceMemos(
                 moodChipLabel = "All Moods",
                 topicChipLabel = "Sad, Excited +2",
-                moodBMS = listOf(MoodBM.Neutral, MoodBM.Sad, MoodBM.Peaceful),
-                selectedMoodBMS = listOf(MoodBM.Sad, MoodBM.Excited),
+                moods = listOf(MoodVM.Neutral, MoodVM.Sad, MoodVM.Peaceful),
+                selectedMood = listOf(MoodVM.Sad, MoodVM.Excited),
                 topics = listOf("Work", "Family", "Life", "Love", "Surprise"),
                 selectedTopics = listOf("Work", "Family", "Life"),
                 memos = mapOf(
@@ -445,7 +434,7 @@ private fun MemoOverviewScreenPreview() {
                             dateTime = LocalDateTime.now(),
                             description = "If a voice memo’s play button is pressed, possible playback for other memos should stop and the new memo should start playing.",
                             audio = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id venenatis justo, vel tristique magna. Donec id lectus sit amet tortor tempor porttitor. Aenean egestas lectus id lectus varius, sit amet laoreet justo tempus. Sed varius mauris nunc, non porta enim finibus pellentesque. Maecenas vitae massa ac nibh porttitor ultricies eget vel enim.",
-                            moodBM = MoodBM.Peaceful,
+                            moodBM = MoodBM.Sad,
                             topics = listOf("Work", "Life")
                         )
                     )
