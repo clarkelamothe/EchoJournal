@@ -37,6 +37,7 @@ class MemoOverviewViewModel(
     private val recorder: AudioRecorder
 ) : ViewModel() {
     private val initialTopic = listOf("Work", "Friends", "Family", "Love", "Surprise")
+    private var filePath: String = ""
 
     var state by mutableStateOf<MemoOverviewState>(MemoOverviewState.VoiceMemos(topics = initialTopic))
         private set
@@ -160,7 +161,7 @@ class MemoOverviewViewModel(
                 title = RecordingState.Recording.getTitle()
             )
         }
-        recorder.start("memo")
+        filePath = recorder.start("memo")
     }
 
     fun pauseRecording() {
@@ -189,10 +190,10 @@ class MemoOverviewViewModel(
         onStartTimer(false)
         showBottomSheet(false)
         lastEmitted.update { Duration.ZERO }
-        viewModelScope.launch {
-            eventChannel.send(MemoOverviewEvent.VoiceMemoRecorded)
-        }
         recorder.stop()
+        viewModelScope.launch {
+            eventChannel.send(MemoOverviewEvent.VoiceMemoRecorded(filePath))
+        }
     }
 
     fun resumeRecording() {

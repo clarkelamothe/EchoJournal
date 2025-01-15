@@ -7,6 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import androidx.navigation.toRoute
 import com.clarkelamothe.echojournal.core.presentation.ui.viewModelFactory
 import com.clarkelamothe.echojournal.memo.MemoModule
 import com.clarkelamothe.echojournal.memo.presentation.create.CreateMemoScreenRoot
@@ -45,15 +46,18 @@ fun NavigationRoot(
                         navController.navigate(Routes.Settings)
                     },
                     onVoiceMemoRecorded = {
-                        navController.navigate(Routes.MemoCreate)
+                        navController.navigate(Routes.MemoCreate(it))
                     }
                 )
             }
 
             composable<Routes.MemoCreate> {
+                val filePath = it.toRoute<Routes.MemoCreate>().filePath
                 val viewModel = viewModel<CreateMemoViewModel>(
                     factory = viewModelFactory {
-                        CreateMemoViewModel()
+                        CreateMemoViewModel(
+                            filePath
+                        )
                     }
                 )
 

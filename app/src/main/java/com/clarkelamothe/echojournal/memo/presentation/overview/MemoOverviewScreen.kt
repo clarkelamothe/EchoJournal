@@ -73,7 +73,7 @@ import java.time.LocalDateTime
 fun MemoOverviewScreenRoot(
     viewModel: MemoOverviewViewModel,
     onSettingsClick: () -> Unit,
-    onVoiceMemoRecorded: () -> Unit
+    onVoiceMemoRecorded: (filePath: String) -> Unit
 ) {
     var audioPermissionGranted by remember { mutableStateOf(false) }
     val audioPermissionResultLauncher = rememberLauncherForActivityResult(
@@ -84,7 +84,9 @@ fun MemoOverviewScreenRoot(
 
     ObserveAsEvents(viewModel.events) {
         when (it) {
-            MemoOverviewEvent.VoiceMemoRecorded -> onVoiceMemoRecorded()
+            is MemoOverviewEvent.VoiceMemoRecorded -> {
+                onVoiceMemoRecorded(it.filePath)
+            }
         }
     }
 

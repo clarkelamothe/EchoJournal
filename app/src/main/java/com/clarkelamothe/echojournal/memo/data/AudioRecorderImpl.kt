@@ -17,17 +17,19 @@ class AudioRecorderImpl(
         } else MediaRecorder()
     }
 
-    override fun start(fileName: String) {
+    override fun start(fileName: String): String {
         val extension = ".mp3"
-        val file = File(context.filesDir, "$fileName$extension").absolutePath
+//        val file = File(context.filesDir, "$fileName$extension").absolutePath
+        val filePath = File.createTempFile("$fileName-", extension).absolutePath
         recorder = createRecorder().apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-            setOutputFile(file)
+            setOutputFile(filePath)
             prepare()
             start()
         }
+        return filePath
     }
 
     override fun maxAmp() = recorder?.maxAmplitude?.toFloat() ?: 0f

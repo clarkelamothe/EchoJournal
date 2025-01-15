@@ -10,7 +10,7 @@ sealed interface Routes {
     data object MemoOverview : Routes
 
     @Serializable
-    data object MemoCreate : Routes
+    data class MemoCreate(val filePath: String) : Routes
 
     @Serializable
     data object Settings : Routes

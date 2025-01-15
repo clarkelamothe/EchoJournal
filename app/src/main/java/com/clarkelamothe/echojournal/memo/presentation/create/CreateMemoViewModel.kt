@@ -4,16 +4,19 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 
-class CreateMemoViewModel : ViewModel() {
+class CreateMemoViewModel(
+    private val filePath: String
+) : ViewModel() {
     private val eventChannel = Channel<CreateMemoEvent>()
     val events = eventChannel.receiveAsFlow()
 
+
     fun onAction(action: CreateMemoAction) {
-        println(action)
         when (action) {
             CreateMemoAction.OnAddMoodClick -> {
 
             }
+
             CreateMemoAction.OnAiClick -> {}
             CreateMemoAction.OnPlayClick -> {}
             CreateMemoAction.OnSaveClick -> {}
