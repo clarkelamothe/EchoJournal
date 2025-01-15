@@ -20,7 +20,7 @@ class VoiceMemoRepositoryImpl(
                     dateTime = LocalDateTime.now(),  // "it.dateTime" to map to correct datetime
                     description = it.description,
                     audio = it.audio,
-                    mood = it.mood,
+                    moodBM = it.moodBM,
                     topics = it.topics
                 )
             }
