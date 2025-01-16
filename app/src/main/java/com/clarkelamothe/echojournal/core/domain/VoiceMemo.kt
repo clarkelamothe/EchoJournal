@@ -1,13 +1,12 @@
 package com.clarkelamothe.echojournal.core.domain
 
-import java.time.LocalDateTime
-
 data class VoiceMemo(
-    val id: Int,
+    val id: Int = 0,
     val title: String,
-    val dateTime: LocalDateTime,
+    val date: String,
+    val time: String,
     val description: String,
-    val audio: Any,
+    val filePath: String,
     val moodBM: MoodBM,
     val topics: List<String>
 )

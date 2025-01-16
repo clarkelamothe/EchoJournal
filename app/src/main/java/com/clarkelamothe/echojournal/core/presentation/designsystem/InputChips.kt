@@ -21,11 +21,10 @@ fun Chip(
     text: String,
     selected: Boolean = true,
     trailingIcon: @Composable () -> Unit = {},
-    onCloseClick: (String) -> Unit = {},
     onClick: () -> Unit = {}
 ) {
     InputChip(
-        onClick = {},
+        onClick = onClick,
         label = {
             Text(
                 maxLines = 1,

@@ -6,12 +6,13 @@ import com.clarkelamothe.echojournal.core.domain.MoodBM
 
 @Entity
 data class VoiceMemoEntity(
-    @PrimaryKey
-    val id: Int,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
     val title: String,
-    val dateTime: String,
+    val date: String,
+    val time: String,
     val description: String,
-    val audio: String,
+    val filePath: String,
     val moodBM: MoodBM,
     val topics: List<String>
 )

@@ -6,7 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clarkelamothe.echojournal.core.domain.VoiceMemo
 import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerState
+import com.clarkelamothe.echojournal.core.presentation.ui.mappers.toBM
 import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
 import com.clarkelamothe.echojournal.memo.domain.AudioPlayer
 import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
@@ -17,6 +19,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalTime
 
 class CreateMemoViewModel(
     private val filePath: String,
@@ -86,6 +90,22 @@ class CreateMemoViewModel(
                 audioPlayer.stop()
                 player.update { it.copy(state = PlayerState.Idle) }
 
+                viewModelScope.launch {
+                    with(memoState.value) {
+                        repository.save(
+                            VoiceMemo(
+                                id = 0,
+                                title = title,
+                                date = LocalDate.now().toString(),
+                                time = LocalTime.now().toString(),
+                                description = description,
+                                filePath = filePath,
+                                moodBM = mood!!.toBM(),
+                                topics = topics
+                            )
+                        )
+                    }
+                }
 
 
                 viewModelScope.launch {

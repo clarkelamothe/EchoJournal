@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.time.Duration
@@ -36,7 +35,7 @@ class MemoOverviewViewModel(
     private val player: AudioPlayer,
     private val recorder: AudioRecorder
 ) : ViewModel() {
-    private val initialTopic = listOf("Work", "Friends", "Family", "Love", "Surprise")
+    private val initialTopic = listOf("Work", "Friends", "Family", "Love", "Surprise", "OOP")
     private var filePath: String = ""
 
     var state by mutableStateOf<MemoOverviewState>(MemoOverviewState.VoiceMemos(topics = initialTopic))
@@ -71,7 +70,10 @@ class MemoOverviewViewModel(
                         topicChipLabel = topicsLabel(selectedTopics),
                         selectedMood = selectedMoods,
                         selectedTopics = selectedTopics,
-                        voiceRecorderState = voiceRecorder
+                        voiceRecorderState = voiceRecorder,
+                        memos = memos.groupBy {
+                            it.date
+                        }
                     )
                 }
         }.launchIn(viewModelScope)
@@ -241,7 +243,7 @@ sealed interface MemoOverviewState {
         val selectedMood: List<MoodVM> = emptyList(),
         val topics: List<String> = listOf(""),
         val selectedTopics: List<String> = emptyList(),
-        val memos: Map<LocalDateTime, List<VoiceMemo>> = emptyMap(),
+        val memos: Map<String, List<VoiceMemo>> = emptyMap(),
         override val voiceRecorderState: VoiceRecorderState = VoiceRecorderState()
     ) : MemoOverviewState
 }
