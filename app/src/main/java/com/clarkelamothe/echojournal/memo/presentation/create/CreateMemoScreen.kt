@@ -60,7 +60,6 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.Chip
 import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalScaffold
 import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalToolbar
 import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerBar
-import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerState
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.AddIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.AiIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.CheckIcon
@@ -84,7 +83,8 @@ fun CreateMemoScreenRoot(
 ) {
     ObserveAsEvents(viewModel.events) {
         when (it) {
-            else -> {}
+            CreateMemoEvent.MemoSaved -> onBackClick()
+            CreateMemoEvent.MemoCancelled -> onBackClick()
         }
     }
 
@@ -188,14 +188,18 @@ fun CreateMemoScreen(
             ) {
                 PlayerBar(
                     modifier = Modifier.weight(1f),
-                    playerState = PlayerState.Idle,
+                    playerState = state.playerState,
                     containerColor = state.mood?.color25
                         ?: MaterialTheme.colorScheme.inverseOnSurface,
                     iconColor = state.mood?.color80 ?: MaterialTheme.colorScheme.primary,
                     timeStamp = "7:00/12:30",
-                    progress = 2.3f,
-                    onClickPlay = {},
-                    onClickPause = {}
+                    progress = state.playProgress,
+                    onClickPlay = {
+                        onAction(CreateMemoAction.OnPlayClick)
+                    },
+                    onClickPause = {
+                        onAction(CreateMemoAction.OnPauseClick)
+                    }
                 )
 
                 IconButton(

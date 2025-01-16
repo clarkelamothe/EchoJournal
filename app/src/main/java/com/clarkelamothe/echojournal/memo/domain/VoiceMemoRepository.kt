@@ -5,4 +5,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface VoiceMemoRepository {
     fun getAll(): Flow<List<VoiceMemo>>
+
 }

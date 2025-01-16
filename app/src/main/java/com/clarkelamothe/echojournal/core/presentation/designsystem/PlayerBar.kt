@@ -121,7 +121,7 @@ enum class PlayerState {
 private fun PlayerBarPreview() {
     EchoJournalTheme {
         PlayerBar(
-            playerState = PlayerState.Idle,
+            playerState = PlayerState.Paused,
             onClickPlay = {},
             onClickPause = {},
             timeStamp = "7:05/12:30"

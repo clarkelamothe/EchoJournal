@@ -52,11 +52,15 @@ fun NavigationRoot(
             }
 
             composable<Routes.MemoCreate> {
+                val context = LocalContext.current
                 val filePath = it.toRoute<Routes.MemoCreate>().filePath
+
                 val viewModel = viewModel<CreateMemoViewModel>(
                     factory = viewModelFactory {
                         CreateMemoViewModel(
-                            filePath
+                            filePath,
+                            MemoModule.player(context),
+                            MemoModule.voiceMemoRepository
                         )
                     }
                 )

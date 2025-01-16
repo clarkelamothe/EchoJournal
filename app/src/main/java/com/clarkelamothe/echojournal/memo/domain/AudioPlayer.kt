@@ -1,8 +1,8 @@
 package com.clarkelamothe.echojournal.memo.domain
 
-import java.io.File
-
 interface AudioPlayer {
-    fun playFile(file: File)
+    fun playFile(filePath: String, onComplete: () -> Unit)
     fun stop()
+    fun pause()
+    fun resume()
 }
