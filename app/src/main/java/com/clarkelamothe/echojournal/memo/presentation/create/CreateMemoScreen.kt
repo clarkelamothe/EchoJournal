@@ -36,7 +36,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,7 +46,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
@@ -62,22 +63,17 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerState
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.AddIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.AiIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.CheckIcon
+import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.CloseIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.EditIcon
-import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.ExcitedIconOutline
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.HashtagIcon
-import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.NeutralIconOutline
-import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.PeacefulIconOutline
-import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.SadIconOutline
-import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.StressedIconOutline
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.ButtonGradient
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.EchoJournalTheme
-import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Excited25
-import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Excited95
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Secondary70
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Secondary95
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.SurfaceTint
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.SurfaceVariant
 import com.clarkelamothe.echojournal.core.presentation.ui.ObserveAsEvents
+import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
 
 @Composable
 fun CreateMemoScreenRoot(
@@ -91,6 +87,7 @@ fun CreateMemoScreenRoot(
     }
 
     CreateMemoScreen(
+        state = viewModel.state,
         onAction = {
             when (it) {
                 CreateMemoAction.OnBackClick -> onBackClick()
@@ -104,6 +101,7 @@ fun CreateMemoScreenRoot(
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun CreateMemoScreen(
+    state: CreateMemoState,
     onAction: (CreateMemoAction) -> Unit
 ) {
     EchoJournalScaffold(
@@ -130,13 +128,11 @@ fun CreateMemoScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                var title by remember { mutableStateOf("") }
-
                 TextField(
                     singleLine = true,
-                    value = title,
-                    onValueChange = { text ->
-                        title = text
+                    value = state.memoTitle,
+                    onValueChange = {
+                        onAction(CreateMemoAction.OnTitleChange(it))
                     },
                     modifier = Modifier
                         .fillMaxWidth(),
@@ -153,9 +149,11 @@ fun CreateMemoScreen(
                                 .size(32.dp)
                         ) {
                             Icon(
-                                imageVector = AddIcon,
+                                imageVector = state.mood?.let {
+                                    ImageVector.vectorResource(it.icon)
+                                } ?: AddIcon,
                                 contentDescription = stringResource(R.string.add_a_mood),
-                                tint = Secondary70
+                                tint = state.mood?.let { Color.Unspecified } ?: Secondary70
                             )
                         }
                     },
@@ -189,8 +187,9 @@ fun CreateMemoScreen(
                 PlayerBar(
                     modifier = Modifier.weight(1f),
                     playerState = PlayerState.Idle,
-                    containerColor = Excited25,
-                    iconColor = Excited95,
+                    containerColor = state.mood?.color25
+                        ?: MaterialTheme.colorScheme.inverseOnSurface,
+                    iconColor = state.mood?.color80 ?: MaterialTheme.colorScheme.primary,
                     timeStamp = "7:00/12:30",
                     progress = 2.3f,
                     onClickPlay = {},
@@ -215,7 +214,7 @@ fun CreateMemoScreen(
                     Icon(
                         imageVector = AiIcon,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = state.mood?.color80 ?: MaterialTheme.colorScheme.primary,
                         modifier = Modifier.fillMaxHeight()
                     )
                 }
@@ -233,9 +232,6 @@ fun CreateMemoScreen(
                 val textFieldState = remember {
                     TextFieldState(initialText = "")
                 }
-                val topics = remember {
-                    mutableStateListOf<String>()
-                }
 
                 BasicTextField(
                     lineLimits = TextFieldLineLimits.SingleLine,
@@ -244,11 +240,11 @@ fun CreateMemoScreen(
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.onBackground),
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Words,
-                        imeAction = if (topics.size < 4) ImeAction.Next else ImeAction.Done
+                        imeAction = ImeAction.Done
                     ),
                     onKeyboardAction = {
-                        if (textFieldState.text.isNotEmpty() && topics.size < 5)
-                            topics.add(textFieldState.text.toString())
+                        if (textFieldState.text.isNotEmpty())
+                            onAction(CreateMemoAction.OnAddTopic(textFieldState.text.toString()))
                         textFieldState.clearText()
                     },
                     modifier = Modifier
@@ -275,7 +271,7 @@ fun CreateMemoScreen(
                                 )
                             }
 
-                            if (textFieldState.text.isEmpty() && !isFocused) {
+                            if (textFieldState.text.isEmpty() && !isFocused && state.topics.isEmpty()) {
                                 Text(
                                     text = stringResource(R.string.add_topic),
                                     color = MaterialTheme.colorScheme.outlineVariant,
@@ -283,15 +279,32 @@ fun CreateMemoScreen(
                                     modifier = Modifier.align(Alignment.CenterVertically)
                                 )
                             } else {
-                                with(topics) {
+                                with(state.topics) {
                                     if (isNotEmpty()) {
                                         mapIndexed { index, topic ->
                                             Chip(
                                                 modifier = Modifier.align(Alignment.CenterVertically),
                                                 text = topic,
                                                 selected = true,
-                                                onCloseClick = {
-                                                    
+                                                trailingIcon = {
+                                                    IconButton(
+                                                        onClick = {
+                                                            onAction(
+                                                                CreateMemoAction.OnRemoveTopic(
+                                                                    index
+                                                                )
+                                                            )
+                                                        },
+                                                        modifier = Modifier
+                                                            .size(16.dp)
+                                                            .align(Alignment.CenterVertically)
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = CloseIcon,
+                                                            contentDescription = null,
+                                                            tint = MaterialTheme.colorScheme.outlineVariant,
+                                                        )
+                                                    }
                                                 }
                                             )
                                         }
@@ -315,12 +328,15 @@ fun CreateMemoScreen(
                 var isFocused by remember {
                     mutableStateOf(false)
                 }
-                val textFieldState = remember {
-                    TextFieldState(initialText = "")
+
+                val textFieldState by remember {
+                    mutableStateOf(TextFieldState(state.description))
                 }
+
                 BasicTextField(
                     state = textFieldState,
                     textStyle = MaterialTheme.typography.bodyMedium,
+                    lineLimits = TextFieldLineLimits.MultiLine(),
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.onBackground),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -333,7 +349,7 @@ fun CreateMemoScreen(
                     decorator = { innerBox ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.Top
                         ) {
                             IconButton(
                                 onClick = {},
@@ -351,7 +367,7 @@ fun CreateMemoScreen(
                                     .wrapContentHeight()
                                     .weight(1f)
                             ) {
-                                if (textFieldState.text.isEmpty() && !isFocused) {
+                                if (state.description.isEmpty() && !isFocused) {
                                     Text(
                                         text = stringResource(R.string.add_description),
                                         color = MaterialTheme.colorScheme.outlineVariant,
@@ -370,7 +386,7 @@ fun CreateMemoScreen(
                 modifier = Modifier
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Bottom
             ) {
                 Button(
                     onClick = {
@@ -387,16 +403,22 @@ fun CreateMemoScreen(
                 }
 
                 Button(
+                    enabled = state.canSave,
                     modifier = Modifier
                         .weight(1f)
                         .shadow(
                             elevation = 8.dp,
-                            shape = CircleShape,
+                            shape = ButtonDefaults.shape,
                             spotColor = MaterialTheme.colorScheme.primary
                         )
-                        .background(
-                            brush = ButtonGradient,
-                            shape = CircleShape
+                        .then(
+                            if (state.canSave) Modifier.background(
+                                brush = ButtonGradient,
+                                shape = ButtonDefaults.shape
+                            ) else Modifier.background(
+                                color = SurfaceVariant,
+                                shape = ButtonDefaults.shape
+                            )
                         ),
                     onClick = {
                         onAction(CreateMemoAction.OnSaveClick)
@@ -408,37 +430,20 @@ fun CreateMemoScreen(
                         disabledContentColor = MaterialTheme.colorScheme.outline
                     ),
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = CheckIcon,
-                            contentDescription = null
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            text = "Save"
-                        )
-                    }
+                    Text(
+                        text = "Save"
+                    )
                 }
             }
             Spacer(Modifier.height(20.dp))
 
-
 //            BottomSheet
-            var showBottomSheet by remember {
-                mutableStateOf(false)
-            }
-            val sheetState = rememberModalBottomSheetState()
-
-            if (showBottomSheet) {
+            if (state.showBottomSheet) {
                 ModalBottomSheet(
                     onDismissRequest = {
-                        showBottomSheet = false
+                        onAction(CreateMemoAction.DismissBottomSheet)
                     },
-                    sheetState = sheetState,
+                    sheetState = rememberModalBottomSheetState(),
                     shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
                     containerColor = MaterialTheme.colorScheme.background,
                     tonalElevation = 16.dp,
@@ -470,119 +475,41 @@ fun CreateMemoScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(
-                            modifier = Modifier.size(64.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            IconButton(
-                                onClick = {},
-                                modifier = Modifier.size(40.dp)
+                        MoodVM.entries.map {
+                            Column(
+                                modifier = Modifier.size(64.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Icon(
-                                    imageVector = StressedIconOutline,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.outlineVariant
+                                IconButton(
+                                    onClick = {
+                                        onAction(CreateMemoAction.OnSelectMood(it))
+                                    },
+                                    modifier = Modifier.size(40.dp)
+                                ) {
+                                    if (it == state.mood) {
+                                        Icon(
+                                            imageVector = ImageVector.vectorResource(it.icon),
+                                            contentDescription = null,
+                                            tint = Color.Unspecified
+                                        )
+                                    } else {
+                                        Icon(
+                                            imageVector = ImageVector.vectorResource(it.iconOutlined),
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.outlineVariant
+                                        )
+                                    }
+                                }
+                                Text(
+                                    text = it.title,
+                                    textAlign = TextAlign.Center,
+                                    color = state.mood?.let {
+                                        MaterialTheme.colorScheme.onSurface
+                                    } ?: MaterialTheme.colorScheme.outline,
+                                    style = MaterialTheme.typography.bodySmall
                                 )
                             }
-                            Text(
-                                text = "Stressed",
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.outline,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-
-                        Column(
-                            modifier = Modifier.size(64.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            IconButton(
-                                onClick = {},
-                                modifier = Modifier.size(40.dp)
-                            ) {
-                                Icon(
-                                    imageVector = SadIconOutline,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.outlineVariant
-                                )
-                            }
-                            Text(
-                                text = "Sad",
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.outline,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-
-                        Column(
-                            modifier = Modifier.size(64.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            IconButton(
-                                onClick = {},
-                                modifier = Modifier.size(40.dp)
-                            ) {
-                                Icon(
-                                    imageVector = NeutralIconOutline,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.outlineVariant
-                                )
-                            }
-                            Text(
-                                text = "Neutral",
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.outline,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-
-                        Column(
-                            modifier = Modifier.size(64.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            IconButton(
-                                onClick = {},
-                                modifier = Modifier.size(40.dp)
-                            ) {
-                                Icon(
-                                    imageVector = PeacefulIconOutline,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.outlineVariant
-                                )
-                            }
-                            Text(
-                                text = "Peaceful",
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.outline,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-
-                        Column(
-                            modifier = Modifier.size(64.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            IconButton(
-                                onClick = {},
-                                modifier = Modifier.size(40.dp)
-                            ) {
-                                Icon(
-                                    imageVector = ExcitedIconOutline,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.outlineVariant
-                                )
-                            }
-                            Text(
-                                text = "Excited",
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.outline,
-                                style = MaterialTheme.typography.bodySmall
-                            )
                         }
                     }
                     Spacer(Modifier.height(24.dp))
@@ -659,6 +586,7 @@ fun CreateMemoScreen(
 private fun CreateMemoScreenPreview() {
     EchoJournalTheme {
         CreateMemoScreen(
+            state = CreateMemoState(),
             onAction = {}
         )
     }
