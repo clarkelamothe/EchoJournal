@@ -361,16 +361,16 @@ fun MemoOverviewScreen(
                                         tint = Color.Unspecified
                                     )
 
-                                    if (memos.last() != it) {
-                                        VerticalDivider(
-                                            modifier = Modifier.height(
-                                                with(LocalDensity.current) {
-                                                    cardHeight.toDp().plus(16.dp)
-                                                }
-                                            ),
-                                            color = NeutralVariant90
-                                        )
-                                    }
+//                                    if (memos.last() != it) {
+//                                        VerticalDivider(
+//                                            modifier = Modifier.height(
+//                                                with(LocalDensity.current) {
+//                                                    cardHeight.toDp().plus(16.dp)
+//                                                }
+//                                            ),
+//                                            color = NeutralVariant90
+//                                        )
+//                                    }
                                 }
 
                                 Column(

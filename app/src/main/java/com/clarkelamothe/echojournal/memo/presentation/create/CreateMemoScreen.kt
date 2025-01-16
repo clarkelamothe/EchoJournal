@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
@@ -339,14 +340,10 @@ fun CreateMemoScreen(
                     mutableStateOf(TextFieldState(state.description))
                 }
 
-                LaunchedEffect(textFieldState) {
-                    if (textFieldState.text.isNotBlank()) {
-                        delay(300)
-                        onAction(CreateMemoAction.OnAddDescription(textFieldState.text.toString()))
-                    }
-                }
-
                 BasicTextField(
+                    inputTransformation = {
+                        onAction(CreateMemoAction.OnAddDescription(this.asCharSequence().toString()))
+                    },
                     state = textFieldState,
                     textStyle = MaterialTheme.typography.bodyMedium,
                     lineLimits = TextFieldLineLimits.MultiLine(),

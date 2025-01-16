@@ -116,7 +116,7 @@ class CreateMemoViewModel(
             is CreateMemoAction.OnAddDescription -> {
                 memoState.update { state ->
                     state.copy(
-                        description = state.description
+                        description = action.description
                     )
                 }
             }
