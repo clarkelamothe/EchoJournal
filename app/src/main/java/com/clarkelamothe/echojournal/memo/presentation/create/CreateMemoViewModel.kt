@@ -24,27 +24,22 @@ class CreateMemoViewModel(
         private set
 
     private val showBottomSheet = MutableStateFlow(false)
-    private val memoTitle = MutableStateFlow("")
-    private val memoTopics = MutableStateFlow<List<String>>(emptyList())
-    private val memoMood = MutableStateFlow<MoodVM?>(null)
-    private val description = MutableStateFlow<String>("")
+    private val memoState = MutableStateFlow(MemoState())
+    private val playProgress = MutableStateFlow(0f)
 
     init {
         combine(
             showBottomSheet,
-            memoTitle,
-            memoTopics,
-            memoMood,
-            description
-        ) { showBottomSheet, title, topics, mood, description ->
+            memoState
+        ) { showBottomSheet, memoState ->
 
             state = state.copy(
                 showBottomSheet = showBottomSheet,
-                memoTitle = title,
-                topics = topics,
-                canSave = title.isNotBlank() && mood != null,
-                mood = mood,
-                description = description
+                memoTitle = memoState.title,
+                topics = memoState.topics,
+                canSave = memoState.title.isNotBlank() && memoState.mood != null,
+                mood = memoState.mood,
+                description = memoState.description
             )
         }.launchIn(viewModelScope)
     }
@@ -54,8 +49,16 @@ class CreateMemoViewModel(
             CreateMemoAction.OnAiClick -> {}
             CreateMemoAction.OnPlayClick -> {}
             CreateMemoAction.OnSaveClick -> {}
+            is CreateMemoAction.OnAddDescription -> {
+                memoState.update { state ->
+                    state.copy(
+                        description = state.description
+                    )
+                }
+            }
+
             CreateMemoAction.DismissBottomSheet -> {
-                memoMood.update { null }
+                memoState.update { it.copy(mood = null) }
                 showBottomSheet.update { false }
             }
 
@@ -64,32 +67,36 @@ class CreateMemoViewModel(
             }
 
             is CreateMemoAction.OnCancelMoodClick -> {
-                memoMood.update { null }
+                memoState.update { it.copy(mood = null) }
                 showBottomSheet.update { false }
             }
 
             is CreateMemoAction.OnConfirmMoodClick -> {
-                memoMood.update { it }
+                memoState.update { it }
                 showBottomSheet.update { false }
             }
 
-            is CreateMemoAction.OnSelectMood -> memoMood.update { action.moodVM }
+            is CreateMemoAction.OnSelectMood -> memoState.update { it.copy(mood = action.moodVM) }
 
             is CreateMemoAction.OnTitleChange -> updateTitle(action.title)
             is CreateMemoAction.OnRemoveTopic -> {
-                memoTopics.update {
-                    it.toMutableStateList().apply {
-                        removeAt(action.index)
-                    }
+                memoState.update { state ->
+                    state.copy(
+                        topics = state.topics.toMutableStateList().apply {
+                            removeAt(action.index)
+                        }
+                    )
                 }
             }
 
             is CreateMemoAction.OnAddTopic -> {
-                memoTopics.update {
-                    it.toMutableStateList().apply {
-                        add(action.topic)
-                        sort()
-                    }
+                memoState.update { state ->
+                    state.copy(
+                        topics = state.topics.toMutableStateList().apply {
+                            add(action.topic)
+                            sort()
+                        }
+                    )
                 }
             }
 
@@ -98,7 +105,7 @@ class CreateMemoViewModel(
     }
 
     private fun updateTitle(title: String) {
-        memoTitle.update { title }
+        memoState.update { it.copy(title = title) }
     }
 }
 
@@ -108,5 +115,13 @@ data class CreateMemoState(
     val mood: MoodVM? = null,
     val topics: List<String> = emptyList(),
     val description: String = "",
-    val canSave: Boolean = false
+    val canSave: Boolean = false,
+    val playProgress: Float = 0f
+)
+
+data class MemoState(
+    val title: String = "",
+    val description: String = "",
+    val topics: List<String> = emptyList(),
+    val mood: MoodVM? = null
 )

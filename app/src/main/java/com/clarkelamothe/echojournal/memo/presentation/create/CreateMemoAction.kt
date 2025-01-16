@@ -16,4 +16,5 @@ sealed interface CreateMemoAction {
     data class OnTitleChange(val title: String) : CreateMemoAction
     data class OnRemoveTopic(val index: Int) : CreateMemoAction
     data class OnAddTopic(val topic: String) : CreateMemoAction
+    data class OnAddDescription(val description: String) : CreateMemoAction
 }

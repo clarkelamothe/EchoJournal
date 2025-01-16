@@ -35,6 +35,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -74,6 +75,7 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Surfac
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.SurfaceVariant
 import com.clarkelamothe.echojournal.core.presentation.ui.ObserveAsEvents
 import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
+import kotlinx.coroutines.delay
 
 @Composable
 fun CreateMemoScreenRoot(
@@ -333,6 +335,13 @@ fun CreateMemoScreen(
                     mutableStateOf(TextFieldState(state.description))
                 }
 
+                LaunchedEffect(textFieldState) {
+                    if (textFieldState.text.isNotBlank()) {
+                        delay(300)
+                        onAction(CreateMemoAction.OnAddDescription(textFieldState.text.toString()))
+                    }
+                }
+
                 BasicTextField(
                     state = textFieldState,
                     textStyle = MaterialTheme.typography.bodyMedium,
@@ -367,7 +376,7 @@ fun CreateMemoScreen(
                                     .wrapContentHeight()
                                     .weight(1f)
                             ) {
-                                if (state.description.isEmpty() && !isFocused) {
+                                if (state.description.isEmpty() && !isFocused && textFieldState.text.isBlank()) {
                                     Text(
                                         text = stringResource(R.string.add_description),
                                         color = MaterialTheme.colorScheme.outlineVariant,
