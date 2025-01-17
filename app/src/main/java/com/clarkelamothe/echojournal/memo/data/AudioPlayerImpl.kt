@@ -11,17 +11,20 @@ class AudioPlayerImpl(
 ) : AudioPlayer {
     private var player: MediaPlayer? = null
 
-    override fun playFile(filePath: String, onComplete: () -> Unit) {
+    override fun init(filePath: String) {
         val file = File(filePath)
-        MediaPlayer.create(
+
+        player = MediaPlayer.create(
             context,
             file.toUri()
-        ).apply {
+        )
+    }
+
+    override fun start(onComplete: () -> Unit) {
+        player?.apply {
             setOnCompletionListener {
                 onComplete()
             }
-
-            player = this
             start()
         }
     }
@@ -38,5 +41,9 @@ class AudioPlayerImpl(
 
     override fun resume() {
         player?.start()
+    }
+
+    override fun duration(): Int {
+        return player?.duration ?: 0
     }
 }

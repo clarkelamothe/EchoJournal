@@ -38,6 +38,9 @@ class CreateMemoViewModel(
     private val player = MutableStateFlow(Player())
 
     init {
+        audioPlayer.init(filePath = filePath)
+        setAudioDuration()
+
         combine(
             showBottomSheet,
             memoState,
@@ -52,7 +55,8 @@ class CreateMemoViewModel(
                 mood = memoState.mood,
                 description = memoState.description,
                 playProgress = player.progress,
-                playerState = player.state
+                playerState = player.state,
+                duration = player.duration
             )
         }.launchIn(viewModelScope)
     }
@@ -65,11 +69,13 @@ class CreateMemoViewModel(
 
             CreateMemoAction.OnPlayClick -> {
                 with(player) {
-                    update { it.copy(state = PlayerState.Playing) }
-                    audioPlayer.playFile(
-                        filePath = filePath,
-                        onComplete = { update { it.copy(state = PlayerState.Idle) } }
-                    )
+                    audioPlayer.start {
+                        update {
+                            it.copy(
+                                state = PlayerState.Playing
+                            )
+                        }
+                    }
                 }
             }
 
@@ -106,7 +112,6 @@ class CreateMemoViewModel(
                         )
                     }
                 }
-
 
                 viewModelScope.launch {
                     eventChannel.send(CreateMemoEvent.MemoSaved)
@@ -168,6 +173,10 @@ class CreateMemoViewModel(
         }
     }
 
+    private fun setAudioDuration() {
+        player.update { it.copy(duration = audioPlayer.duration()) }
+    }
+
     private fun updateTitle(title: String) {
         memoState.update { it.copy(title = title) }
     }
@@ -181,7 +190,8 @@ data class CreateMemoState(
     val description: String = "",
     val canSave: Boolean = false,
     val playProgress: Float = 0f,
-    val playerState: PlayerState = PlayerState.Idle
+    val playerState: PlayerState = PlayerState.Idle,
+    val duration: Int = 0
 )
 
 data class MemoState(
@@ -193,5 +203,6 @@ data class MemoState(
 
 data class Player(
     val state: PlayerState = PlayerState.Idle,
-    val progress: Float = 0f
+    val progress: Float = 0f,
+    val duration: Int = 0
 )

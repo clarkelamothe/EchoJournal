@@ -1,8 +1,10 @@
 package com.clarkelamothe.echojournal.memo.domain
 
 interface AudioPlayer {
-    fun playFile(filePath: String, onComplete: () -> Unit)
+    fun init(filePath: String)
+    fun start(onComplete: () -> Unit)
     fun stop()
     fun pause()
     fun resume()
+    fun duration(): Int
 }

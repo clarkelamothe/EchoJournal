@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
@@ -36,7 +35,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -75,7 +73,6 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.Surfac
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.SurfaceVariant
 import com.clarkelamothe.echojournal.core.presentation.ui.ObserveAsEvents
 import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
-import kotlinx.coroutines.delay
 
 @Composable
 fun CreateMemoScreenRoot(
@@ -193,7 +190,7 @@ fun CreateMemoScreen(
                     containerColor = state.mood?.color25
                         ?: MaterialTheme.colorScheme.inverseOnSurface,
                     iconColor = state.mood?.color80 ?: MaterialTheme.colorScheme.primary,
-                    timeStamp = "7:00/12:30",
+                    timeStamp = "7:00/${state.duration}",
                     progress = state.playProgress,
                     onClickPlay = {
                         onAction(CreateMemoAction.OnPlayClick)
