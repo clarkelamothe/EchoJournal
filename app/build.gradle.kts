@@ -32,6 +32,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
         jvmTarget = "11"
@@ -55,6 +56,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    coreLibraryDesugaring(libs.desugar.jdk)
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.androidx.room.testing)
     testImplementation(libs.junit)
