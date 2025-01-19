@@ -4,7 +4,12 @@ import android.content.Context
 import android.media.MediaPlayer
 import androidx.core.net.toUri
 import com.clarkelamothe.echojournal.memo.domain.AudioPlayer
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
 import java.io.File
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.ZERO
+import kotlin.time.Duration.Companion.milliseconds
 
 class AudioPlayerImpl(
     private val context: Context
@@ -13,7 +18,6 @@ class AudioPlayerImpl(
 
     override fun init(filePath: String) {
         val file = File(filePath)
-
         player = MediaPlayer.create(
             context,
             file.toUri()
@@ -21,11 +25,9 @@ class AudioPlayerImpl(
     }
 
     override fun start(onComplete: () -> Unit) {
-        player?.apply {
-            setOnCompletionListener {
-                onComplete()
-            }
-            start()
+        player?.start()
+        player?.setOnCompletionListener {
+            onComplete()
         }
     }
 
@@ -43,7 +45,22 @@ class AudioPlayerImpl(
         player?.start()
     }
 
-    override fun duration(): Int {
-        return player?.duration ?: 0
+    override fun duration(): Duration {
+        return player?.duration?.milliseconds ?: ZERO
+    }
+
+    override fun observerPosition(
+        start: Boolean,
+    ) = flow {
+        player?.let { player ->
+            if (player.isPlaying) {
+                while (start) {
+                    emit(player.currentPosition.milliseconds)
+                    delay(100.milliseconds)
+                }
+            } else {
+                emit(ZERO)
+            }
+        }
     }
 }

@@ -38,7 +38,8 @@ fun PlayerBar(
     timeStamp: String,
     progress: Float = 0.8f,
     onClickPlay: () -> Unit,
-    onClickPause: () -> Unit
+    onClickPause: () -> Unit,
+    onClickResume: () -> Unit
 ) {
     Button(
         modifier = modifier,
@@ -62,7 +63,7 @@ fun PlayerBar(
                     when (playerState) {
                         PlayerState.Idle -> onClickPlay()
                         PlayerState.Playing -> onClickPause()
-                        PlayerState.Paused -> onClickPlay()
+                        PlayerState.Paused -> onClickResume()
                     }
                 },
                 modifier = Modifier
@@ -124,7 +125,8 @@ private fun PlayerBarPreview() {
             playerState = PlayerState.Paused,
             onClickPlay = {},
             onClickPause = {},
-            timeStamp = "7:05/12:30"
+            timeStamp = "7:05/12:30",
+            onClickResume = {}
         )
     }
 }

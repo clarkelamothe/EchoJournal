@@ -1,5 +1,6 @@
 package com.clarkelamothe.echojournal.memo.presentation.create
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -177,19 +178,23 @@ fun CreateMemoScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                val progress by animateFloatAsState(targetValue = state.playProgress)
                 PlayerBar(
                     modifier = Modifier.weight(1f),
                     playerState = state.playerState,
                     containerColor = state.mood?.color25
                         ?: MaterialTheme.colorScheme.inverseOnSurface,
                     iconColor = state.mood?.color80 ?: MaterialTheme.colorScheme.primary,
-                    timeStamp = "7:00/${state.duration}",
-                    progress = state.playProgress,
+                    timeStamp = "${state.elapsedTime}/${state.duration}",
+                    progress = progress,
                     onClickPlay = {
                         onAction(CreateMemoAction.OnPlayClick)
                     },
                     onClickPause = {
                         onAction(CreateMemoAction.OnPauseClick)
+                    },
+                    onClickResume = {
+                        onAction(CreateMemoAction.OnClickResume)
                     }
                 )
 

@@ -1,3 +1,5 @@
+@file:Suppress("OPT_IN_USAGE")
+
 package com.clarkelamothe.echojournal.memo.presentation.create
 
 import androidx.compose.runtime.getValue
@@ -15,12 +17,16 @@ import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.Locale
+import kotlin.time.Duration
 
 class CreateMemoViewModel(
     private val filePath: String,
@@ -35,6 +41,7 @@ class CreateMemoViewModel(
 
     private val showBottomSheet = MutableStateFlow(false)
     private val memoState = MutableStateFlow(MemoState())
+    private val observeElapseTime = MutableStateFlow(false)
     private val player = MutableStateFlow(Player())
 
     init {
@@ -54,11 +61,30 @@ class CreateMemoViewModel(
                 canSave = memoState.title.isNotBlank() && memoState.mood != null,
                 mood = memoState.mood,
                 description = memoState.description,
-                playProgress = player.progress,
+                playProgress = player.progress.toFloat(),
                 playerState = player.state,
-                duration = player.duration
+                duration = player.duration.toMinutesAndSeconds(),
+                elapsedTime = player.elapsedTime
             )
         }.launchIn(viewModelScope)
+
+        observeElapseTime
+            .flatMapLatest {
+                audioPlayer.observerPosition(it)
+            }
+            .onEach { ticker ->
+                player.update {
+                    it.copy(
+                        elapsedTime = ticker.toMinutesAndSeconds(),
+                        progress = (ticker / it.duration).coerceIn(0.0, 1.0)
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun Duration.toMinutesAndSeconds() = this.toComponents { minutes, seconds, _ ->
+        String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
     }
 
     fun onAction(action: CreateMemoAction) {
@@ -68,15 +94,21 @@ class CreateMemoViewModel(
             }
 
             CreateMemoAction.OnPlayClick -> {
-                with(player) {
-                    audioPlayer.start {
-                        update {
-                            it.copy(
-                                state = PlayerState.Playing
-                            )
+                observeElapseTime.update { true }
+                player.apply {
+                    update { it.copy(state = PlayerState.Playing) }
+                    audioPlayer.start(
+                        onComplete = {
+                            observeElapseTime.update { false }
+                            update { it.copy(state = PlayerState.Idle) }
                         }
-                    }
+                    )
                 }
+            }
+
+            CreateMemoAction.OnClickResume -> {
+                audioPlayer.resume()
+                player.update { it.copy(state = PlayerState.Playing) }
             }
 
             CreateMemoAction.OnPauseClick -> {
@@ -86,6 +118,7 @@ class CreateMemoViewModel(
 
             CreateMemoAction.OnCancelClick -> {
                 audioPlayer.stop()
+                observeElapseTime.update { false }
                 player.update { it.copy(state = PlayerState.Idle) }
                 viewModelScope.launch {
                     eventChannel.send(CreateMemoEvent.MemoCancelled)
@@ -191,7 +224,8 @@ data class CreateMemoState(
     val canSave: Boolean = false,
     val playProgress: Float = 0f,
     val playerState: PlayerState = PlayerState.Idle,
-    val duration: Int = 0
+    val duration: String = "00:00",
+    val elapsedTime: String = "00:00"
 )
 
 data class MemoState(
@@ -203,6 +237,7 @@ data class MemoState(
 
 data class Player(
     val state: PlayerState = PlayerState.Idle,
-    val progress: Float = 0f,
-    val duration: Int = 0
+    val progress: Double = 0.0,
+    val duration: Duration = Duration.ZERO,
+    val elapsedTime: String = "00:00"
 )

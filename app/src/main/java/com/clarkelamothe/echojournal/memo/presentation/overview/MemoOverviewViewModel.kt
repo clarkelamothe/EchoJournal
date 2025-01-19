@@ -92,7 +92,6 @@ class MemoOverviewViewModel(
                 voiceRecorderState.update { recorderState ->
                     val init = LocalTime.of(0, 0, 0).plusSeconds(it.inWholeSeconds)
                     val formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
-                    println(recorder.maxAmp())
                     recorderState.copy(
                         elapsedTime = init.format(formatter),
                         amplitudes = recorderState.amplitudes + recorder.maxAmp()

@@ -28,7 +28,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -43,7 +42,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
@@ -67,7 +65,6 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.components.i
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.CloseIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.HashtagIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.EchoJournalTheme
-import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.NeutralVariant90
 import com.clarkelamothe.echojournal.core.presentation.ui.ObserveAsEvents
 import com.clarkelamothe.echojournal.core.presentation.ui.mappers.toVM
 import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
@@ -411,7 +408,8 @@ fun MemoOverviewScreen(
                                         iconColor = it.moodBM.toVM().color80,
                                         progress = 0.7f,
                                         onClickPlay = {},
-                                        onClickPause = {}
+                                        onClickPause = {},
+                                        onClickResume = {}
                                     )
 
                                     Text(

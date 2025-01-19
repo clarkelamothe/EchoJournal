@@ -13,7 +13,7 @@ sealed interface CreateMemoAction {
     data object OnConfirmMoodClick : CreateMemoAction
     data object DismissBottomSheet : CreateMemoAction
     data object OnPauseClick : CreateMemoAction
-
+    data object OnClickResume : CreateMemoAction
     data class OnSelectMood(val moodVM: MoodVM) : CreateMemoAction
     data class OnTitleChange(val title: String) : CreateMemoAction
     data class OnRemoveTopic(val index: Int) : CreateMemoAction
