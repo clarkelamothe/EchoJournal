@@ -126,15 +126,13 @@ class CreateMemoViewModel(
             }
 
             CreateMemoAction.OnPlayClick -> {
-                observeElapseTime.update { true }
                 player.apply {
                     update { it.copy(state = PlayerState.Playing) }
-                    audioPlayer.start(
-                        onComplete = {
-                            observeElapseTime.update { false }
-                            update { it.copy(state = PlayerState.Idle) }
-                        }
-                    )
+                    audioPlayer.start {
+                        update { it.copy(state = PlayerState.Idle) }
+                        observeElapseTime.update { false }
+                    }
+                    observeElapseTime.update { true }
                 }
             }
 
