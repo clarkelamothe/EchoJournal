@@ -2,7 +2,6 @@
 
 package com.clarkelamothe.echojournal.memo.presentation.overview
 
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clarkelamothe.echojournal.core.domain.VoiceMemo
 import com.clarkelamothe.echojournal.core.presentation.designsystem.RecordingState
+import com.clarkelamothe.echojournal.core.presentation.ui.mappers.toVM
 import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
 import com.clarkelamothe.echojournal.memo.domain.AudioPlayer
 import com.clarkelamothe.echojournal.memo.domain.AudioRecorder
@@ -58,24 +58,39 @@ class MemoOverviewViewModel(
             repository.getAllTopics(),
             selectedMoods,
             selectedTopics,
-            voiceRecorderState,
-        ) { memos, initTo, selectedMoods, selectedTopics, voiceRecorder ->
+            voiceRecorderState
+        ) { memos, initialTopics, selectedMoods, selectedTopics, voiceRecorder ->
             state =
                 if (memos.isEmpty()) {
                     MemoOverviewState.Empty(
                         voiceRecorderState = voiceRecorder
                     )
                 } else {
+                    val voiceMemos = when {
+                        selectedMoods.isEmpty() && selectedTopics.isEmpty() -> memos
+                        selectedMoods.isEmpty() -> memos.filter { memo ->
+                            memo.topics.isNotEmpty() && memo.topics.any { it in selectedTopics }
+                        }
+                        selectedTopics.isEmpty() -> memos.filter { memo ->
+                            memo.topics.isNotEmpty() && selectedMoods.contains(memo.moodBM.toVM())
+                        }
+                        else -> memos.filter { memo ->
+                            memo.topics.isNotEmpty() &&
+                                    selectedMoods.contains(memo.moodBM.toVM()) &&
+                                    memo.topics.any { it in selectedTopics }
+                        }
+                    }
+
                     (state as MemoOverviewState.VoiceMemos).copy(
                         moodChipLabel = moodLabel(selectedMoods),
-                        topicChipLabel = topicsLabel(selectedTopics, initTo),
+                        topicChipLabel = topicsLabel(selectedTopics, initialTopics),
                         selectedMood = selectedMoods,
                         selectedTopics = selectedTopics,
                         voiceRecorderState = voiceRecorder,
-                        memos = memos.groupBy {
-                            it.date
-                        },
-                        topics = initTo
+                        memos = voiceMemos.groupBy {
+                                it.date
+                            },
+                        topics = initialTopics
                     )
                 }
         }.launchIn(viewModelScope)
@@ -112,8 +127,8 @@ class MemoOverviewViewModel(
             }
         }
 
-    private fun topicsLabel(selectedTopics: List<String>, initTo: List<String>) = if (
-        selectedTopics.isEmpty() || selectedTopics.size == initTo.size
+    private fun topicsLabel(selectedTopics: List<String>, initialTopics: List<String>) = if (
+        selectedTopics.isEmpty() || selectedTopics.size == initialTopics.size
     ) "All Topics" else {
         with(selectedTopics.take(2)) {
             if (selectedTopics.size < 2) {
@@ -121,7 +136,7 @@ class MemoOverviewViewModel(
             } else {
                 joinToString(", ") {
                     it
-                } + " +${initTo.size - selectedTopics.size}"
+                } + " +${initialTopics.size - selectedTopics.size}"
             }
         }
     }
@@ -146,7 +161,7 @@ class MemoOverviewViewModel(
             } else {
                 add(topic)
                 sort()
-//                if (size == initTo.size) removeAll(this)  // todo
+                if (size == (state as MemoOverviewState.VoiceMemos).topics.size) removeAll(this)
             }
         }
     }

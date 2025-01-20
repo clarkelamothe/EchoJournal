@@ -17,19 +17,14 @@ import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.fold
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.Locale
@@ -171,7 +166,6 @@ class CreateMemoViewModel(
                     with(memoState.value) {
                         repository.save(
                             VoiceMemo(
-                                id = 0,
                                 title = title,
                                 date = LocalDate.now().toString(),
                                 time = LocalTime.now().toString(),

@@ -13,6 +13,9 @@ interface VoiceMemoDao {
     @Query("SELECT * FROM VoiceMemoEntity")
     fun getAll(): Flow<List<VoiceMemoEntity>>
 
+    @Query("SELECT DISTINCT topicTitle FROM Topic")
+    fun getAllTopics(): Flow<List<String>>
+
     @Upsert
     suspend fun upsert(voiceMemo: VoiceMemoEntity): Long
 
@@ -22,15 +25,9 @@ interface VoiceMemoDao {
     @Query("SELECT * FROM Topic WHERE topicTitle = :title LIMIT 1")
     suspend fun getTopicByTitle(title: String): Topic?
 
-//    @Query("SELECT topics FROM VoiceMemoEntity WHERE topics LIKE :input")
-//    fun getAllTopics(input: String): Flow<List<String>>
-
     @Transaction
     @Query("SELECT topicTitle FROM Topic WHERE topicTitle LIKE :input")
     fun getTopicsWithMemo(input: String): Flow<List<String>>
-
-    @Query("select distinct topicTitle from Topic")
-    fun getAllTopics(): Flow<List<String>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMemoTopicCrossRef(crossRef: MemoTopicCrossRef)
@@ -59,5 +56,4 @@ interface VoiceMemoDao {
             insertMemoTopicCrossRef(crossRef)
         }
     }
-
 }

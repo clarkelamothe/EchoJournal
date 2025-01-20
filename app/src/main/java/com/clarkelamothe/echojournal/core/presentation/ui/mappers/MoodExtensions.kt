@@ -14,7 +14,7 @@ fun MoodBM.toVM() = when (this) {
 fun MoodVM.toBM() = when (this) {
     MoodVM.Stressed -> MoodBM.Stressed
     MoodVM.Sad -> MoodBM.Sad
-    MoodVM.Peaceful -> MoodBM.Neutral
-    MoodVM.Neutral -> MoodBM.Peaceful
+    MoodVM.Peaceful -> MoodBM.Peaceful
+    MoodVM.Neutral -> MoodBM.Neutral
     MoodVM.Excited -> MoodBM.Excited
 }
