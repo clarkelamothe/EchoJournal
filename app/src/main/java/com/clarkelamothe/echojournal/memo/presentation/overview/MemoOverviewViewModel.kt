@@ -2,6 +2,7 @@
 
 package com.clarkelamothe.echojournal.memo.presentation.overview
 
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -35,10 +36,9 @@ class MemoOverviewViewModel(
     private val player: AudioPlayer,
     private val recorder: AudioRecorder
 ) : ViewModel() {
-    private val initialTopic = listOf("Work", "Friends", "Family", "Love", "Surprise", "OOP")
     private var filePath: String = ""
 
-    var state by mutableStateOf<MemoOverviewState>(MemoOverviewState.VoiceMemos(topics = initialTopic))
+    var state by mutableStateOf<MemoOverviewState>(MemoOverviewState.VoiceMemos())
         private set
 
     private val selectedMoods = MutableStateFlow(emptyList<MoodVM>())
@@ -55,10 +55,11 @@ class MemoOverviewViewModel(
     init {
         combine(
             repository.getAll(),
+            repository.getAllTopics(),
             selectedMoods,
             selectedTopics,
             voiceRecorderState,
-        ) { memos, selectedMoods, selectedTopics, voiceRecorder ->
+        ) { memos, initTo, selectedMoods, selectedTopics, voiceRecorder ->
             state =
                 if (memos.isEmpty()) {
                     MemoOverviewState.Empty(
@@ -67,13 +68,14 @@ class MemoOverviewViewModel(
                 } else {
                     (state as MemoOverviewState.VoiceMemos).copy(
                         moodChipLabel = moodLabel(selectedMoods),
-                        topicChipLabel = topicsLabel(selectedTopics),
+                        topicChipLabel = topicsLabel(selectedTopics, initTo),
                         selectedMood = selectedMoods,
                         selectedTopics = selectedTopics,
                         voiceRecorderState = voiceRecorder,
                         memos = memos.groupBy {
                             it.date
-                        }
+                        },
+                        topics = initTo
                     )
                 }
         }.launchIn(viewModelScope)
@@ -110,8 +112,8 @@ class MemoOverviewViewModel(
             }
         }
 
-    private fun topicsLabel(selectedTopics: List<String>) = if (
-        selectedTopics.isEmpty() || selectedTopics.size == initialTopic.size
+    private fun topicsLabel(selectedTopics: List<String>, initTo: List<String>) = if (
+        selectedTopics.isEmpty() || selectedTopics.size == initTo.size
     ) "All Topics" else {
         with(selectedTopics.take(2)) {
             if (selectedTopics.size < 2) {
@@ -119,7 +121,7 @@ class MemoOverviewViewModel(
             } else {
                 joinToString(", ") {
                     it
-                } + " +${initialTopic.size - selectedTopics.size}"
+                } + " +${initTo.size - selectedTopics.size}"
             }
         }
     }
@@ -144,7 +146,7 @@ class MemoOverviewViewModel(
             } else {
                 add(topic)
                 sort()
-                if (size == initialTopic.size) removeAll(this)
+//                if (size == initTo.size) removeAll(this)  // todo
             }
         }
     }

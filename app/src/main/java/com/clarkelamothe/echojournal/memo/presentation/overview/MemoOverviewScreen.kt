@@ -467,8 +467,7 @@ private fun MemoOverviewScreenPreview() {
                             time = "17:30",
                             description = "If a voice memo’s play button is pressed, possible playback for other memos should stop and the new memo should start playing.",
                             filePath = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id venenatis justo, vel tristique magna. Donec id lectus sit amet tortor tempor porttitor. Aenean egestas lectus id lectus varius, sit amet laoreet justo tempus. Sed varius mauris nunc, non porta enim finibus pellentesque. Maecenas vitae massa ac nibh porttitor ultricies eget vel enim.",
-                            moodBM = MoodBM.Sad,
-                            topics = listOf("Work", "Life")
+                            moodBM = MoodBM.Sad
                         )
                     )
                 )
