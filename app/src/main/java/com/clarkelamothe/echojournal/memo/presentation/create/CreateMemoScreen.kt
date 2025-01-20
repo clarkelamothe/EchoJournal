@@ -14,8 +14,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -24,6 +26,7 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,7 +35,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,20 +48,24 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import com.clarkelamothe.echojournal.R
 import com.clarkelamothe.echojournal.core.presentation.designsystem.Chip
+import com.clarkelamothe.echojournal.core.presentation.designsystem.DropdownItem
 import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalScaffold
 import com.clarkelamothe.echojournal.core.presentation.designsystem.EchoJournalToolbar
 import com.clarkelamothe.echojournal.core.presentation.designsystem.MoodsBottomSheet
 import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerBar
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.AddIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.AiIcon
+import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.CheckIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.CloseIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.EditIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.HashtagIcon
@@ -235,6 +244,10 @@ fun CreateMemoScreen(
                     TextFieldState(initialText = "")
                 }
 
+                LaunchedEffect(textFieldState.text) {
+                    onAction(CreateMemoAction.OnInputTopic(textFieldState.text))
+                }
+
                 BasicTextField(
                     lineLimits = TextFieldLineLimits.SingleLine,
                     state = textFieldState,
@@ -255,6 +268,8 @@ fun CreateMemoScreen(
                             isFocused = focusState.isFocused
                         },
                     decorator = { innerBox ->
+                        val width = LocalConfiguration.current.screenWidthDp.dp - 32.dp
+
                         FlowRow(
                             modifier = Modifier,
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -313,6 +328,60 @@ fun CreateMemoScreen(
                                     }
                                     Box(modifier = Modifier.align(Alignment.CenterVertically)) { innerBox() }
                                 }
+                            }
+
+                            DropdownMenu(
+                                modifier = Modifier.width(width),
+                                expanded = state.expand,
+                                onDismissRequest = {
+                                    onAction(CreateMemoAction.DismissDropdown)
+                                },
+                                shape = RoundedCornerShape(10.dp),
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                properties = PopupProperties(focusable = false)
+                            ) {
+                                state.topicSuggestion.forEach { topic ->
+                                    key(topic) { topic.hashCode() }
+
+                                    DropdownItem(
+                                        isSelected = topic in state.topics,
+                                        item = topic,
+                                        onSelect = {
+                                            onAction(CreateMemoAction.OnAddTopic(topic))
+                                            textFieldState.clearText()
+                                        },
+                                        leadingIcon = {
+                                            Icon(
+                                                tint = Color.Unspecified,
+                                                imageVector = HashtagIcon,
+                                                contentDescription = null
+                                            )
+                                        },
+                                        trailingIcon = {
+                                            Icon(
+                                                imageVector = CheckIcon,
+                                                contentDescription = null
+                                            )
+                                        }
+                                    )
+                                }
+
+                                DropdownItem(
+                                    isSelected = false,
+                                    item = stringResource(R.string.create, textFieldState.text),
+                                    onSelect = {
+                                        onAction(CreateMemoAction.OnAddTopic(textFieldState.text.toString()))
+                                        textFieldState.clearText()
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            tint = Color.Unspecified,
+                                            imageVector = AddIcon,
+                                            contentDescription = null
+                                        )
+                                    },
+                                    trailingIcon = {}
+                                )
                             }
                         }
                     }

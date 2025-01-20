@@ -17,12 +17,19 @@ import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.fold
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.Locale
@@ -42,6 +49,7 @@ class CreateMemoViewModel(
     private val showBottomSheet = MutableStateFlow(false)
     private val memoState = MutableStateFlow(MemoState())
     private val observeElapseTime = MutableStateFlow(false)
+    private val topicInput = MutableStateFlow("")
     private val player = MutableStateFlow(Player())
 
     init {
@@ -64,7 +72,9 @@ class CreateMemoViewModel(
                 playProgress = player.progress.toFloat(),
                 playerState = player.state,
                 duration = player.duration.toMinutesAndSeconds(),
-                elapsedTime = player.elapsedTime
+                elapsedTime = player.elapsedTime,
+                expand = memoState.expand,
+                topicSuggestion = memoState.topicSuggestion
             )
         }.launchIn(viewModelScope)
 
@@ -81,6 +91,26 @@ class CreateMemoViewModel(
                 }
             }
             .launchIn(viewModelScope)
+
+        topicInput
+            .debounce(300)
+            .onEach { input ->
+                memoState.update {
+                    it.copy(expand = input.length >= 2)
+                }
+            }
+            .flatMapLatest {
+                if (it.length >= 2) {
+                    repository.filterTopics(it)
+                } else flowOf()
+            }
+            .onEach { suggestions ->
+                println(suggestions)
+//                memoState.update {
+//                    it.copy(topicSuggestion = suggestions)
+//                }
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun Duration.toMinutesAndSeconds() = this.toComponents { minutes, seconds, _ ->
@@ -91,6 +121,14 @@ class CreateMemoViewModel(
         when (action) {
             CreateMemoAction.OnAiClick -> {
 
+            }
+
+            is CreateMemoAction.DismissDropdown -> {
+                memoState.update { it.copy(expand = false) }
+            }
+
+            is CreateMemoAction.OnInputTopic -> {
+                topicInput.update { action.text.toString() }
             }
 
             CreateMemoAction.OnPlayClick -> {
@@ -195,8 +233,7 @@ class CreateMemoViewModel(
                 memoState.update { state ->
                     state.copy(
                         topics = state.topics.toMutableStateList().apply {
-                            add(action.topic)
-                            sort()
+                            if (action.topic !in this) add(action.topic)
                         }
                     )
                 }
@@ -225,14 +262,18 @@ data class CreateMemoState(
     val playProgress: Float = 0f,
     val playerState: PlayerState = PlayerState.Idle,
     val duration: String = "00:00",
-    val elapsedTime: String = "00:00"
+    val elapsedTime: String = "00:00",
+    val topicSuggestion: List<String> = emptyList(),
+    val expand: Boolean = false
 )
 
 data class MemoState(
     val title: String = "",
     val description: String = "",
     val topics: List<String> = emptyList(),
-    val mood: MoodVM? = null
+    val mood: MoodVM? = null,
+    val expand: Boolean = false,
+    val topicSuggestion: List<String> = emptyList()
 )
 
 data class Player(

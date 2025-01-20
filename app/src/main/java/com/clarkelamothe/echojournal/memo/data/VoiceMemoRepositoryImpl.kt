@@ -30,6 +30,8 @@ class VoiceMemoRepositoryImpl(
         }
     }
 
+    override fun filterTopics(input: String) = dao.getAllTopics("%${input.lowercase()}%")
+
     override suspend fun save(voiceMemo: VoiceMemo) {
         dao.upsert(
             VoiceMemoEntity(

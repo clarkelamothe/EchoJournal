@@ -12,4 +12,7 @@ interface VoiceMemoDao {
 
     @Upsert
     suspend fun upsert(voiceMemo: VoiceMemoEntity)
+
+    @Query("SELECT topics FROM VoiceMemoEntity WHERE topics LIKE :input")
+    fun getAllTopics(input: String): Flow<List<String>>
 }

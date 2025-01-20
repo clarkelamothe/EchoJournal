@@ -5,6 +5,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface VoiceMemoRepository {
     fun getAll(): Flow<List<VoiceMemo>>
-
+    fun filterTopics(input: String): Flow<List<String>>
     suspend fun save(voiceMemo: VoiceMemo)
 }

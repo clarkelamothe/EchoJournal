@@ -4,6 +4,7 @@ import androidx.room.TypeConverter
 import com.clarkelamothe.echojournal.core.domain.MoodBM
 import kotlinx.serialization.json.Json
 
+
 class TypeConverters {
 
     @TypeConverter
