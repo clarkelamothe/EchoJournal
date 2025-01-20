@@ -100,10 +100,9 @@ class CreateMemoViewModel(
                 } else flowOf()
             }
             .onEach { suggestions ->
-                println(suggestions)
-//                memoState.update {
-//                    it.copy(topicSuggestion = suggestions)
-//                }
+                memoState.update {
+                    it.copy(topicSuggestion = suggestions)
+                }
             }
             .launchIn(viewModelScope)
     }
