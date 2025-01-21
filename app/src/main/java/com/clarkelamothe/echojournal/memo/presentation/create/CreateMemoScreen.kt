@@ -1,5 +1,6 @@
 package com.clarkelamothe.echojournal.memo.presentation.create
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -32,6 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -107,6 +110,44 @@ fun CreateMemoScreen(
     state: CreateMemoState,
     onAction: (CreateMemoAction) -> Unit
 ) {
+    var showDialog by remember { mutableStateOf(false) }
+    BackHandler {
+        showDialog = !showDialog
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
+            title = {
+                Text(
+                    text = "Are you sure you want to cancel?"
+                )
+            },
+            onDismissRequest = {
+                showDialog = false
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDialog = false
+                        onAction(CreateMemoAction.OnBackClick)
+                    }
+                )  {
+                    Text("Yes")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDialog = false
+                    }
+                )  {
+                    Text("No")
+                }
+            }
+        )
+    }
+
     EchoJournalScaffold(
         withGradient = false,
         topAppBar = {
