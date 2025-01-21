@@ -15,9 +15,9 @@ import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
 import com.clarkelamothe.echojournal.memo.domain.AudioPlayer
 import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
@@ -88,7 +88,6 @@ class CreateMemoViewModel(
             .launchIn(viewModelScope)
 
         topicInput
-            .debounce(300)
             .onEach { input ->
                 memoState.update {
                     it.copy(expand = input.length >= 2)
@@ -115,6 +114,21 @@ class CreateMemoViewModel(
         when (action) {
             CreateMemoAction.OnAiClick -> {
 
+            }
+
+            CreateMemoAction.OnConfirmDialog -> {
+                state = state.copy(showDialog = false)
+                viewModelScope.launch {
+                    eventChannel.send(CreateMemoEvent.MemoCancelled)
+                }
+            }
+
+            CreateMemoAction.DismissDialog -> {
+                state = state.copy(showDialog = false)
+            }
+
+            CreateMemoAction.OnBackClick -> {
+                state = state.copy(showDialog = true)
             }
 
             is CreateMemoAction.DismissDropdown -> {
@@ -255,7 +269,8 @@ data class CreateMemoState(
     val duration: String = "00:00",
     val elapsedTime: String = "00:00",
     val topicSuggestion: List<String> = emptyList(),
-    val expand: Boolean = false
+    val expand: Boolean = false,
+    val showDialog: Boolean = false
 )
 
 data class MemoState(

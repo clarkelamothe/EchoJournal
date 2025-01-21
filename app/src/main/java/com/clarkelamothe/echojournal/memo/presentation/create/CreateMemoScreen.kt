@@ -29,7 +29,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -87,35 +86,28 @@ fun CreateMemoScreenRoot(
 ) {
     ObserveAsEvents(viewModel.events) {
         when (it) {
-            CreateMemoEvent.MemoSaved -> onBackClick()
+            CreateMemoEvent.MemoSaved,
             CreateMemoEvent.MemoCancelled -> onBackClick()
         }
     }
 
     CreateMemoScreen(
         state = viewModel.state,
-        onAction = {
-            when (it) {
-                CreateMemoAction.OnBackClick -> onBackClick()
-                CreateMemoAction.OnCancelClick -> onBackClick()
-                else -> viewModel.onAction(it)
-            }
-        }
+        onAction = viewModel::onAction
     )
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CreateMemoScreen(
     state: CreateMemoState,
     onAction: (CreateMemoAction) -> Unit
 ) {
-    var showDialog by remember { mutableStateOf(false) }
     BackHandler {
-        showDialog = !showDialog
+        onAction(CreateMemoAction.OnBackClick)
     }
 
-    if (showDialog) {
+    if (state.showDialog) {
         AlertDialog(
             containerColor = MaterialTheme.colorScheme.surface,
             title = {
@@ -124,24 +116,23 @@ fun CreateMemoScreen(
                 )
             },
             onDismissRequest = {
-                showDialog = false
+                onAction(CreateMemoAction.DismissDialog)
             },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        showDialog = false
-                        onAction(CreateMemoAction.OnBackClick)
+                        onAction(CreateMemoAction.OnConfirmDialog)
                     }
-                )  {
+                ) {
                     Text("Yes")
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = {
-                        showDialog = false
+                        onAction(CreateMemoAction.DismissDialog)
                     }
-                )  {
+                ) {
                     Text("No")
                 }
             }

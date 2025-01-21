@@ -120,7 +120,7 @@ fun MoodsBottomSheet(
                     Text(
                         text = it.title,
                         textAlign = TextAlign.Center,
-                        color = if (canSave) {
+                        color = if (moodVM == it) {
                             MaterialTheme.colorScheme.onSurface
                         } else {
                             MaterialTheme.colorScheme.outline
