@@ -7,7 +7,6 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(entities = [VoiceMemoEntity::class, Topic::class, MemoTopicCrossRef::class], version = 1)
-@TypeConverters(com.clarkelamothe.echojournal.core.database.TypeConverters::class)
 abstract class EchoJournalDatabase : RoomDatabase() {
     abstract fun voiceMemoDao(): VoiceMemoDao
 
