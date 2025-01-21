@@ -4,7 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
+
+private const val DB_NAME = "echo-journal-db"
 
 @Database(entities = [VoiceMemoEntity::class, Topic::class, MemoTopicCrossRef::class], version = 1)
 abstract class EchoJournalDatabase : RoomDatabase() {
@@ -14,7 +15,7 @@ abstract class EchoJournalDatabase : RoomDatabase() {
         fun db(context: Context) = Room.databaseBuilder(
             context,
             EchoJournalDatabase::class.java,
-            "echo-journal-db"
+            DB_NAME
         ).build()
     }
 }

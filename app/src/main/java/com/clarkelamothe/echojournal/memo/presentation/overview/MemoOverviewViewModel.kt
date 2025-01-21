@@ -72,11 +72,11 @@ class MemoOverviewViewModel(
                             memo.topics.isNotEmpty() && memo.topics.any { it in selectedTopics }
                         }
                         selectedTopics.isEmpty() -> memos.filter { memo ->
-                            memo.topics.isNotEmpty() && selectedMoods.contains(memo.moodBM.toVM())
+                            memo.topics.isNotEmpty() && selectedMoods.contains(memo.mood.toVM())
                         }
                         else -> memos.filter { memo ->
                             memo.topics.isNotEmpty() &&
-                                    selectedMoods.contains(memo.moodBM.toVM()) &&
+                                    selectedMoods.contains(memo.mood.toVM()) &&
                                     memo.topics.any { it in selectedTopics }
                         }
                     }

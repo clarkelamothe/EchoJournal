@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.Junction
 import androidx.room.PrimaryKey
 import androidx.room.Relation
-import com.clarkelamothe.echojournal.core.domain.MoodBM
+import com.clarkelamothe.echojournal.core.domain.Mood
 
 @Entity
 data class VoiceMemoEntity(
@@ -16,7 +16,7 @@ data class VoiceMemoEntity(
     val time: String,
     val description: String,
     val filePath: String,
-    val moodBM: MoodBM
+    val mood: Mood
 )
 
 @Entity

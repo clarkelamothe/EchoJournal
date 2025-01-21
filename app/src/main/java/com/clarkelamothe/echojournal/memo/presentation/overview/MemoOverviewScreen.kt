@@ -49,7 +49,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.clarkelamothe.echojournal.R
-import com.clarkelamothe.echojournal.core.domain.MoodBM
+import com.clarkelamothe.echojournal.core.domain.Mood
 import com.clarkelamothe.echojournal.core.domain.VoiceMemo
 import com.clarkelamothe.echojournal.core.presentation.designsystem.Chip
 import com.clarkelamothe.echojournal.core.presentation.designsystem.DropdownItem
@@ -353,7 +353,7 @@ fun MemoOverviewScreen(
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Icon(
-                                        imageVector = ImageVector.vectorResource(it.moodBM.toVM().icon),
+                                        imageVector = ImageVector.vectorResource(it.mood.toVM().icon),
                                         contentDescription = null,
                                         tint = Color.Unspecified
                                     )
@@ -404,8 +404,8 @@ fun MemoOverviewScreen(
                                         modifier = Modifier,
                                         playerState = PlayerState.Idle,
                                         timeStamp = "0:00/7:30",
-                                        containerColor = it.moodBM.toVM().color25,
-                                        iconColor = it.moodBM.toVM().color80,
+                                        containerColor = it.mood.toVM().color25,
+                                        iconColor = it.mood.toVM().color80,
                                         progress = 0.7f,
                                         onClickPlay = {},
                                         onClickPause = {},
@@ -467,7 +467,7 @@ private fun MemoOverviewScreenPreview() {
                             time = "17:30",
                             description = "If a voice memo’s play button is pressed, possible playback for other memos should stop and the new memo should start playing.",
                             filePath = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id venenatis justo, vel tristique magna. Donec id lectus sit amet tortor tempor porttitor. Aenean egestas lectus id lectus varius, sit amet laoreet justo tempus. Sed varius mauris nunc, non porta enim finibus pellentesque. Maecenas vitae massa ac nibh porttitor ultricies eget vel enim.",
-                            moodBM = MoodBM.Sad
+                            mood = Mood.Sad
                         )
                     )
                 )

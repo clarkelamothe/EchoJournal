@@ -1,6 +1,6 @@
 package com.clarkelamothe.echojournal.core.domain
 
-enum class MoodBM(
+enum class Mood(
     val title: String
 ) {
     Stressed("Stressed"),

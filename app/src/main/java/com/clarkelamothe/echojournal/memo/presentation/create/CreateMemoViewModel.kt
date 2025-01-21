@@ -15,7 +15,6 @@ import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
 import com.clarkelamothe.echojournal.memo.domain.AudioPlayer
 import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -182,7 +181,7 @@ class CreateMemoViewModel(
                                 time = LocalTime.now().toString(),
                                 description = description,
                                 filePath = filePath,
-                                moodBM = mood!!.toBM(),
+                                mood = mood!!.toBM(),
                                 topics = topics
                             )
                         )
