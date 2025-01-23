@@ -310,7 +310,7 @@ fun MemoOverviewScreen(
                                                 )
                                             },
                                             trailingIcon = {
-                                                Icon(
+                                                if (isTopicSelected) Icon(
                                                     imageVector = CheckIcon,
                                                     contentDescription = null
                                                 )

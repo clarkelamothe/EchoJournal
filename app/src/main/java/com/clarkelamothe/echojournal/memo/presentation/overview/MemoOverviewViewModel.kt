@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.time.Duration
@@ -87,9 +88,14 @@ class MemoOverviewViewModel(
                         selectedMood = selectedMoods,
                         selectedTopics = selectedTopics,
                         voiceRecorderState = voiceRecorder,
-                        memos = voiceMemos.groupBy {
-                                it.date
-                            },
+                        memos = voiceMemos.map {
+                            it.copy(
+                                date = formatDate(it.date),
+                                time = formatTime(it.time)
+                            )
+                        }.groupBy {
+                            it.date
+                        },
                         topics = initialTopics
                     )
                 }
@@ -116,6 +122,18 @@ class MemoOverviewViewModel(
                 }
             }
             .launchIn(viewModelScope)
+    }
+
+    private fun formatTime(time: String): String = LocalTime.parse(time).format(DateTimeFormatter.ofPattern("HH:mm"))
+    private fun formatDate(dateString: String): String {
+        val date = LocalDate.parse(dateString)
+        val today = LocalDate.now()
+
+        return when (date) {
+            today -> "Today"
+            today.minusDays(1) -> "Yesterday"
+            else -> date.format(DateTimeFormatter.ofPattern("EEEE, MMM d"))
+        }
     }
 
     private fun moodLabel(selectedMoods: List<MoodVM>) =
@@ -161,6 +179,7 @@ class MemoOverviewViewModel(
             } else {
                 add(topic)
                 sort()
+                if (size == (state as MemoOverviewState.VoiceMemos).topics.size) removeAll(this)
             }
         }
     }
