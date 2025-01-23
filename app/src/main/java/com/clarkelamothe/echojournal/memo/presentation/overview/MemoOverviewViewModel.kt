@@ -72,7 +72,7 @@ class MemoOverviewViewModel(
                             memo.topics.isNotEmpty() && memo.topics.any { it in selectedTopics }
                         }
                         selectedTopics.isEmpty() -> memos.filter { memo ->
-                            memo.topics.isNotEmpty() && selectedMoods.contains(memo.mood.toVM())
+                            selectedMoods.contains(memo.mood.toVM())
                         }
                         else -> memos.filter { memo ->
                             memo.topics.isNotEmpty() &&
@@ -161,7 +161,6 @@ class MemoOverviewViewModel(
             } else {
                 add(topic)
                 sort()
-                if (size == (state as MemoOverviewState.VoiceMemos).topics.size) removeAll(this)
             }
         }
     }
