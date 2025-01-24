@@ -19,6 +19,7 @@ import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
 import com.clarkelamothe.echojournal.memo.presentation.formatDate
 import com.clarkelamothe.echojournal.memo.presentation.formatTime
 import com.clarkelamothe.echojournal.memo.presentation.toElapsedTimeFormatted
+import com.clarkelamothe.echojournal.memo.presentation.toLocalDate
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -78,14 +80,27 @@ class MemoOverviewViewModel(
                         selectedMood = selectedMoods,
                         selectedTopics = selectedTopics,
                         voiceRecorderState = voiceRecorder,
-                        memos = voiceMemos.map {
-                            it.copy(
-                                date = it.date.formatDate(),
-                                time = it.time.formatTime()
-                            )
-                        }.groupBy {
-                            it.date
-                        },
+                        memos = voiceMemos
+                            .map {
+                                it.copy(
+                                    date = it.date.formatDate(),
+                                    time = it.time.formatTime()
+                                )
+                            }.groupBy {
+                                it.date
+                            }.toSortedMap(
+                                compareByDescending {
+                                    when (it) {
+                                        "Today" -> LocalDate.now()
+                                        "Yesterday" -> LocalDate.now().minusDays(1)
+                                        else -> try {
+                                            it.toLocalDate()
+                                        } catch (e: Exception) {
+                                            LocalDate.MIN
+                                        }
+                                    }
+                                }
+                            ),
                         topics = initialTopics
                     )
                 }
@@ -149,7 +164,6 @@ class MemoOverviewViewModel(
             selectedTopics = filterState.selectedTopics.toMutableStateList().apply {
                 toggle(topic)
                 sort()
-                if (size == (state as MemoOverviewState.VoiceMemos).topics.size) removeAll(this)
             }
         )
     }

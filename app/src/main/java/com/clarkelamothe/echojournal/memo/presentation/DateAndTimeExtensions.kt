@@ -15,11 +15,12 @@ fun String.formatDate(): String {
     return when (date) {
         today -> "Today"
         today.minusDays(1) -> "Yesterday"
-        else -> date.format(DateTimeFormatter.ofPattern("EEEE, MMM d"))
+        else -> date.format(dateTimeFormatter)
     }
 }
 
-fun String.toLocalDate() = LocalDate.parse(this)
+private val dateTimeFormatter = DateTimeFormatter.ofPattern("EEEE, MMM d")
+fun String.toLocalDate(): LocalDate = LocalDate.parse(this, dateTimeFormatter)
 
 fun Duration.toElapsedTimeFormatted(): String =
     LocalTime.of(0, 0, 0).plusSeconds(this.inWholeSeconds)
