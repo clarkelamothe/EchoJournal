@@ -18,6 +18,7 @@ sealed interface MemoOverviewState {
         val topics: List<String> = listOf(""),
         val selectedTopics: List<String> = emptyList(),
         val memos: Map<String, List<VoiceMemo>> = emptyMap(),
+        val descriptionMaxLine: Int = 3,
         override val voiceRecorderState: VoiceRecorderState = VoiceRecorderState()
     ) : MemoOverviewState
 }

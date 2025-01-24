@@ -51,6 +51,7 @@ class MemoOverviewViewModel(
     private val shouldStartTimer = MutableStateFlow(false)
     private val observeAmplitudes = MutableStateFlow(false)
     private val lastEmitted = MutableStateFlow(Duration.ZERO)
+    private val descriptionMaxLines = MutableStateFlow(3)
     private val amplitudes = MutableStateFlow<List<Int>>(emptyList())
 
     private val eventChannel = Channel<MemoOverviewEvent>()
@@ -61,8 +62,9 @@ class MemoOverviewViewModel(
             repository.getAll(),
             repository.getAllTopics(),
             filterState,
-            voiceRecorderState
-        ) { memos, initialTopics, filterState, voiceRecorder ->
+            voiceRecorderState,
+            descriptionMaxLines
+        ) { memos, initialTopics, filterState, voiceRecorder, maxLines ->
             state =
                 if (memos.isEmpty()) {
                     MemoOverviewState.Empty(
@@ -101,7 +103,8 @@ class MemoOverviewViewModel(
                                     }
                                 }
                             ),
-                        topics = initialTopics
+                        topics = initialTopics,
+                        descriptionMaxLine = maxLines
                     )
                 }
         }.launchIn(viewModelScope)
@@ -239,6 +242,10 @@ class MemoOverviewViewModel(
 
     private fun onStartTimer(start: Boolean) {
         shouldStartTimer.update { start }
+    }
+
+    fun onClickShowMore() {
+        descriptionMaxLines.update { Int.MAX_VALUE }
     }
 
     private fun tickerFlow(

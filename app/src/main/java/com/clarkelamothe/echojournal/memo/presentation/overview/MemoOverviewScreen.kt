@@ -61,6 +61,7 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.MoodIconsRow
 import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerBar
 import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerState
 import com.clarkelamothe.echojournal.core.presentation.designsystem.RecordingBottomSheet
+import com.clarkelamothe.echojournal.core.presentation.designsystem.TextExpand
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.CheckIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.CloseIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.HashtagIcon
@@ -103,7 +104,8 @@ fun MemoOverviewScreenRoot(
                     audioPermissionResultLauncher.launch(RECORD_AUDIO)
                 }
                 showBottomSheet(audioPermissionGranted)
-            }
+            },
+            onClickShowMore = ::onClickShowMore
         )
 
         if (state.voiceRecorderState.showBottomSheet) {
@@ -134,7 +136,8 @@ fun MemoOverviewScreen(
     onClearTopic: () -> Unit,
     onSelectTopic: (String) -> Unit,
     onSettingsClick: () -> Unit,
-    onClickFab: () -> Unit
+    onClickFab: () -> Unit,
+    onClickShowMore: () -> Unit
 ) {
     EchoJournalScaffold(
         topAppBar = {
@@ -412,12 +415,12 @@ fun MemoOverviewScreen(
                                         onClickResume = {}
                                     )
 
-                                    Text(
-                                        modifier = Modifier.fillMaxWidth(),
+                                    TextExpand(
+                                        modifier = Modifier.fillMaxSize(),
                                         style = MaterialTheme.typography.bodyMedium,
-                                        overflow = TextOverflow.Ellipsis,
-                                        maxLines = 3,
-                                        text = it.description
+                                        maxLines = state.descriptionMaxLine,
+                                        text = it.description,
+                                        onExpand = onClickShowMore
                                     )
 
                                     FlowRow(
@@ -477,7 +480,8 @@ private fun MemoOverviewScreenPreview() {
             onClearTopic = {},
             onSelectTopic = {},
             onSettingsClick = {},
-            onClickFab = {}
+            onClickFab = {},
+            onClickShowMore = {}
         )
     }
 }
