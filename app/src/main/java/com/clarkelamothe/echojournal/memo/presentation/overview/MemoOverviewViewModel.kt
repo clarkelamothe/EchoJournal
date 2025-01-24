@@ -16,6 +16,9 @@ import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
 import com.clarkelamothe.echojournal.memo.domain.AudioPlayer
 import com.clarkelamothe.echojournal.memo.domain.AudioRecorder
 import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
+import com.clarkelamothe.echojournal.memo.presentation.formatDate
+import com.clarkelamothe.echojournal.memo.presentation.formatTime
+import com.clarkelamothe.echojournal.memo.presentation.toElapsedTimeFormatted
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,9 +30,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -80,8 +80,8 @@ class MemoOverviewViewModel(
                         voiceRecorderState = voiceRecorder,
                         memos = voiceMemos.map {
                             it.copy(
-                                date = formatDate(it.date),
-                                time = formatTime(it.time)
+                                date = it.date.formatDate(),
+                                time = it.time.formatTime()
                             )
                         }.groupBy {
                             it.date
@@ -103,10 +103,8 @@ class MemoOverviewViewModel(
                 lastEmitted.value = it
 
                 voiceRecorderState.update { recorderState ->
-                    val init = LocalTime.of(0, 0, 0).plusSeconds(it.inWholeSeconds)
-                    val formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
                     recorderState.copy(
-                        elapsedTime = init.format(formatter),
+                        elapsedTime = it.toElapsedTimeFormatted(),
                         amplitudes = recorderState.amplitudes + recorder.maxAmp()
                     )
                 }
@@ -132,20 +130,6 @@ class MemoOverviewViewModel(
             memo.topics.isNotEmpty() &&
                     selectedMoods.contains(memo.mood.toVM()) &&
                     memo.topics.any { it in selectedTopics }
-        }
-    }
-
-    private fun formatTime(time: String): String =
-        LocalTime.parse(time).format(DateTimeFormatter.ofPattern("HH:mm"))
-
-    private fun formatDate(dateString: String): String {
-        val date = LocalDate.parse(dateString)
-        val today = LocalDate.now()
-
-        return when (date) {
-            today -> "Today"
-            today.minusDays(1) -> "Yesterday"
-            else -> date.format(DateTimeFormatter.ofPattern("EEEE, MMM d"))
         }
     }
 
@@ -255,36 +239,4 @@ class MemoOverviewViewModel(
             delay(period)
         }
     }
-}
-
-sealed interface MemoOverviewState {
-    val voiceRecorderState: VoiceRecorderState
-
-    data class Empty(
-        override val voiceRecorderState: VoiceRecorderState = VoiceRecorderState()
-    ) : MemoOverviewState
-
-    data class VoiceMemos(
-        val moodChipLabel: String = "",
-        val topicChipLabel: String = "",
-        val moods: List<MoodVM> = MoodVM.entries,
-        val selectedMood: List<MoodVM> = emptyList(),
-        val topics: List<String> = listOf(""),
-        val selectedTopics: List<String> = emptyList(),
-        val memos: Map<String, List<VoiceMemo>> = emptyMap(),
-        override val voiceRecorderState: VoiceRecorderState = VoiceRecorderState()
-    ) : MemoOverviewState
-}
-
-data class VoiceRecorderState(
-    val showBottomSheet: Boolean = false,
-    val state: RecordingState = RecordingState.Recording,
-    val elapsedTime: String = "0:00:00",
-    val title: String = state.getTitle(),
-    val amplitudes: List<Float> = emptyList()
-)
-
-fun RecordingState.getTitle() = when (this) {
-    RecordingState.Recording -> "Recording your memories..."
-    RecordingState.Paused -> "Recording paused"
 }
