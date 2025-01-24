@@ -5,6 +5,7 @@ package com.clarkelamothe.echojournal.memo.presentation.overview
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -42,8 +43,8 @@ class MemoOverviewViewModel(
     var state by mutableStateOf<MemoOverviewState>(MemoOverviewState.VoiceMemos())
         private set
 
-    private val selectedMoods = MutableStateFlow(emptyList<MoodVM>())
-    private val selectedTopics = MutableStateFlow(emptyList<String>())
+    private val filterState = MutableStateFlow(FilterState())
+
     private val voiceRecorderState = MutableStateFlow(VoiceRecorderState())
     private val shouldStartTimer = MutableStateFlow(false)
     private val observeAmplitudes = MutableStateFlow(false)
@@ -57,16 +58,18 @@ class MemoOverviewViewModel(
         combine(
             repository.getAll(),
             repository.getAllTopics(),
-            selectedMoods,
-            selectedTopics,
+            filterState,
             voiceRecorderState
-        ) { memos, initialTopics, selectedMoods, selectedTopics, voiceRecorder ->
+        ) { memos, initialTopics, filterState, voiceRecorder ->
             state =
                 if (memos.isEmpty()) {
                     MemoOverviewState.Empty(
                         voiceRecorderState = voiceRecorder
                     )
                 } else {
+                    val selectedTopics = filterState.selectedTopics
+                    val selectedMoods = filterState.selectedMoods
+
                     val voiceMemos = when {
                         selectedMoods.isEmpty() && selectedTopics.isEmpty() -> memos
                         selectedMoods.isEmpty() -> memos.filter { memo ->
@@ -149,38 +152,42 @@ class MemoOverviewViewModel(
         selectedTopics.isEmpty() || selectedTopics.size == initialTopics.size
     ) "All Topics" else {
         with(selectedTopics.take(2)) {
-            if (selectedTopics.size < 2) {
+            if (selectedTopics.size <= 2) {
                 joinToString(", ") { it }
             } else {
                 joinToString(", ") {
                     it
-                } + " +${initialTopics.size - selectedTopics.size}"
+                } + " +${selectedTopics.size - 2}"
             }
         }
     }
 
-    fun onClearMood() = selectedMoods.update { emptyList() }
-    fun onClearTopic() = selectedTopics.update { emptyList() }
-    fun onSelect(mood: MoodVM) = selectedMoods.update {
-        it.toMutableStateList().apply {
-            if (contains(mood)) {
-                remove(mood)
-            } else {
-                add(mood)
+    fun onClearMood() = filterState.update { it.copy(selectedMoods = emptyList()) }
+    fun onClearTopic() = filterState.update { it.copy(selectedTopics = emptyList()) }
+    fun onSelect(mood: MoodVM) = filterState.update { filterState ->
+        filterState.copy(
+            selectedMoods = filterState.selectedMoods.toMutableStateList().apply {
+                toggle(mood)
                 if (size == MoodVM.entries.size) removeAll(this)
             }
-        }
+        )
     }
 
-    fun onSelect(topic: String) = selectedTopics.update {
-        it.toMutableStateList().apply {
-            if (contains(topic)) {
-                remove(topic)
-            } else {
-                add(topic)
+    fun onSelect(topic: String) = filterState.update { filterState ->
+        filterState.copy(
+            selectedTopics = filterState.selectedTopics.toMutableStateList().apply {
+                toggle(topic)
                 sort()
                 if (size == (state as MemoOverviewState.VoiceMemos).topics.size) removeAll(this)
             }
+        )
+    }
+
+    private fun <T> SnapshotStateList<T>.toggle(item: T) {
+        if (contains(item)) {
+            remove(item)
+        } else {
+            add(item)
         }
     }
 
