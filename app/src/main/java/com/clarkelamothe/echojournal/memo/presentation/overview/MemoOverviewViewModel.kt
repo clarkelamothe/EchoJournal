@@ -70,24 +70,11 @@ class MemoOverviewViewModel(
                     val selectedTopics = filterState.selectedTopics
                     val selectedMoods = filterState.selectedMoods
 
-                    val voiceMemos = when {
-                        selectedMoods.isEmpty() && selectedTopics.isEmpty() -> memos
-                        selectedMoods.isEmpty() -> memos.filter { memo ->
-                            memo.topics.isNotEmpty() && memo.topics.any { it in selectedTopics }
-                        }
-                        selectedTopics.isEmpty() -> memos.filter { memo ->
-                            selectedMoods.contains(memo.mood.toVM())
-                        }
-                        else -> memos.filter { memo ->
-                            memo.topics.isNotEmpty() &&
-                                    selectedMoods.contains(memo.mood.toVM()) &&
-                                    memo.topics.any { it in selectedTopics }
-                        }
-                    }
+                    val voiceMemos = filteredVoiceMemos(selectedMoods, selectedTopics, memos)
 
                     (state as MemoOverviewState.VoiceMemos).copy(
-                        moodChipLabel = moodLabel(selectedMoods),
-                        topicChipLabel = topicsLabel(selectedTopics, initialTopics),
+                        moodChipLabel = filterState.moodLabel(selectedMoods),
+                        topicChipLabel = filterState.topicsLabel(selectedTopics, initialTopics),
                         selectedMood = selectedMoods,
                         selectedTopics = selectedTopics,
                         voiceRecorderState = voiceRecorder,
@@ -127,7 +114,30 @@ class MemoOverviewViewModel(
             .launchIn(viewModelScope)
     }
 
-    private fun formatTime(time: String): String = LocalTime.parse(time).format(DateTimeFormatter.ofPattern("HH:mm"))
+    private fun filteredVoiceMemos(
+        selectedMoods: List<MoodVM>,
+        selectedTopics: List<String>,
+        memos: List<VoiceMemo>
+    ) = when {
+        selectedMoods.isEmpty() && selectedTopics.isEmpty() -> memos
+        selectedMoods.isEmpty() -> memos.filter { memo ->
+            memo.topics.isNotEmpty() && memo.topics.any { it in selectedTopics }
+        }
+
+        selectedTopics.isEmpty() -> memos.filter { memo ->
+            selectedMoods.contains(memo.mood.toVM())
+        }
+
+        else -> memos.filter { memo ->
+            memo.topics.isNotEmpty() &&
+                    selectedMoods.contains(memo.mood.toVM()) &&
+                    memo.topics.any { it in selectedTopics }
+        }
+    }
+
+    private fun formatTime(time: String): String =
+        LocalTime.parse(time).format(DateTimeFormatter.ofPattern("HH:mm"))
+
     private fun formatDate(dateString: String): String {
         val date = LocalDate.parse(dateString)
         val today = LocalDate.now()
@@ -136,29 +146,6 @@ class MemoOverviewViewModel(
             today -> "Today"
             today.minusDays(1) -> "Yesterday"
             else -> date.format(DateTimeFormatter.ofPattern("EEEE, MMM d"))
-        }
-    }
-
-    private fun moodLabel(selectedMoods: List<MoodVM>) =
-        if (selectedMoods.isEmpty() || selectedMoods.size == MoodVM.entries.size)
-            "All Moods"
-        else {
-            selectedMoods.joinToString(separator = ", ") {
-                it.title
-            }
-        }
-
-    private fun topicsLabel(selectedTopics: List<String>, initialTopics: List<String>) = if (
-        selectedTopics.isEmpty() || selectedTopics.size == initialTopics.size
-    ) "All Topics" else {
-        with(selectedTopics.take(2)) {
-            if (selectedTopics.size <= 2) {
-                joinToString(", ") { it }
-            } else {
-                joinToString(", ") {
-                    it
-                } + " +${selectedTopics.size - 2}"
-            }
         }
     }
 
@@ -183,7 +170,7 @@ class MemoOverviewViewModel(
         )
     }
 
-    private fun <T> SnapshotStateList<T>.toggle(item: T) {
+    fun <T> SnapshotStateList<T>.toggle(item: T) {
         if (contains(item)) {
             remove(item)
         } else {
