@@ -406,7 +406,7 @@ fun MemoOverviewScreen(
                                     PlayerBar(
                                         modifier = Modifier,
                                         playerState = PlayerState.Idle,
-                                        timeStamp = "0:00/7:30",
+                                        timeStamp = "0:00/${it.duration}",
                                         containerColor = it.mood.toVM().color25,
                                         iconColor = it.mood.toVM().color80,
                                         progress = 0.7f,
@@ -470,7 +470,8 @@ private fun MemoOverviewScreenPreview() {
                             time = "17:30",
                             description = "If a voice memo’s play button is pressed, possible playback for other memos should stop and the new memo should start playing.",
                             filePath = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id venenatis justo, vel tristique magna. Donec id lectus sit amet tortor tempor porttitor. Aenean egestas lectus id lectus varius, sit amet laoreet justo tempus. Sed varius mauris nunc, non porta enim finibus pellentesque. Maecenas vitae massa ac nibh porttitor ultricies eget vel enim.",
-                            mood = Mood.Sad
+                            mood = Mood.Sad,
+                            duration = "7:30"
                         )
                     )
                 )

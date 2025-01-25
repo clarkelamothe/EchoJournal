@@ -17,6 +17,7 @@ import com.clarkelamothe.echojournal.memo.domain.AudioPlayer
 import com.clarkelamothe.echojournal.memo.domain.AudioRecorder
 import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
 import com.clarkelamothe.echojournal.memo.presentation.formatDate
+import com.clarkelamothe.echojournal.memo.presentation.formatDuration
 import com.clarkelamothe.echojournal.memo.presentation.formatTime
 import com.clarkelamothe.echojournal.memo.presentation.toElapsedTimeFormatted
 import com.clarkelamothe.echojournal.memo.presentation.toLocalDate
@@ -84,9 +85,11 @@ class MemoOverviewViewModel(
                         voiceRecorderState = voiceRecorder,
                         memos = voiceMemos
                             .map {
+                                player.init(it.filePath)
                                 it.copy(
                                     date = it.date.formatDate(),
-                                    time = it.time.formatTime()
+                                    time = it.time.formatTime(),
+                                    duration = player.duration().formatDuration()
                                 )
                             }.groupBy {
                                 it.date

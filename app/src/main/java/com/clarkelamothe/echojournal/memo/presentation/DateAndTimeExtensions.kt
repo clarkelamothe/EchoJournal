@@ -25,3 +25,9 @@ fun String.toLocalDate(): LocalDate = LocalDate.parse(this, dateTimeFormatter)
 fun Duration.toElapsedTimeFormatted(): String =
     LocalTime.of(0, 0, 0).plusSeconds(this.inWholeSeconds)
         .format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+
+fun Duration.formatDuration(): String = this.toComponents { minutes, seconds, _ ->
+    val formattedSec = if (seconds in 0..9) "0$seconds" else seconds
+
+    "$minutes:$formattedSec"
+}
