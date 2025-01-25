@@ -20,7 +20,7 @@ import com.clarkelamothe.echojournal.memo.presentation.formatDate
 import com.clarkelamothe.echojournal.memo.presentation.formatDuration
 import com.clarkelamothe.echojournal.memo.presentation.formatTime
 import com.clarkelamothe.echojournal.memo.presentation.toElapsedTimeFormatted
-import com.clarkelamothe.echojournal.memo.presentation.toLocalDate
+import com.clarkelamothe.echojournal.memo.presentation.toLocalTime
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,7 +32,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -87,25 +86,15 @@ class MemoOverviewViewModel(
                             .map {
                                 player.init(it.filePath)
                                 it.copy(
-                                    date = it.date.formatDate(),
-                                    time = it.time.formatTime(),
+                                    date = it.date,
+                                    time = it.time.formatTime().toLocalTime(),
                                     duration = player.duration().formatDuration()
                                 )
-                            }.groupBy {
+                            }.sortedByDescending {
                                 it.date
-                            }.toSortedMap(
-                                compareByDescending {
-                                    when (it) {
-                                        "Today" -> LocalDate.now()
-                                        "Yesterday" -> LocalDate.now().minusDays(1)
-                                        else -> try {
-                                            it.toLocalDate()
-                                        } catch (e: Exception) {
-                                            LocalDate.MIN
-                                        }
-                                    }
-                                }
-                            ),
+                            }
+                            .groupBy { it.date }
+                            .mapKeys { it.key.formatDate() },
                         topics = initialTopics,
                         descriptionMaxLine = maxLines
                     )

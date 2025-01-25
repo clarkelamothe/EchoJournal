@@ -69,6 +69,8 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.EchoJo
 import com.clarkelamothe.echojournal.core.presentation.ui.ObserveAsEvents
 import com.clarkelamothe.echojournal.core.presentation.ui.mappers.toVM
 import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
+import java.time.LocalDate
+import java.time.LocalTime
 
 @Composable
 fun MemoOverviewScreenRoot(
@@ -332,7 +334,7 @@ fun MemoOverviewScreen(
                         ) {
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                text = date,
+                                text = date.toString(),
                                 modifier = Modifier.padding(top = 12.dp),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -397,7 +399,7 @@ fun MemoOverviewScreen(
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
                                         Text(
-                                            text = it.time,
+                                            text = it.time.toString(),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -466,12 +468,12 @@ private fun MemoOverviewScreenPreview() {
                         VoiceMemo(
                             id = 0,
                             title = "My Entry",
-                            date = "Yesterday",
-                            time = "17:30",
+                            date = LocalDate.now(),
+                            time = LocalTime.now(),
                             description = "If a voice memo’s play button is pressed, possible playback for other memos should stop and the new memo should start playing.",
                             filePath = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id venenatis justo, vel tristique magna. Donec id lectus sit amet tortor tempor porttitor. Aenean egestas lectus id lectus varius, sit amet laoreet justo tempus. Sed varius mauris nunc, non porta enim finibus pellentesque. Maecenas vitae massa ac nibh porttitor ultricies eget vel enim.",
                             mood = Mood.Sad,
-                            duration = "7:30"
+                            duration = "0:00"
                         )
                     )
                 )

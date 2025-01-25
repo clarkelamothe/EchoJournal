@@ -7,6 +7,8 @@ import com.clarkelamothe.echojournal.core.database.VoiceMemoEntity
 import com.clarkelamothe.echojournal.core.database.VoiceMemoWithTopics
 import com.clarkelamothe.echojournal.core.domain.VoiceMemo
 import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
+import com.clarkelamothe.echojournal.memo.presentation.toLocalDate
+import com.clarkelamothe.echojournal.memo.presentation.toLocalTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
@@ -21,8 +23,8 @@ class VoiceMemoRepositoryImpl(
                 VoiceMemo(
                     id = memos.voiceMemo.memoId,
                     title = memos.voiceMemo.title,
-                    date = memos.voiceMemo.date,
-                    time = memos.voiceMemo.time,
+                    date = memos.voiceMemo.date.toLocalDate(),
+                    time = memos.voiceMemo.time.toLocalTime(),
                     description = memos.voiceMemo.description,
                     filePath = memos.voiceMemo.filePath,
                     mood = memos.voiceMemo.mood,

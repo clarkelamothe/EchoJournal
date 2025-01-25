@@ -177,8 +177,8 @@ class CreateMemoViewModel(
                         repository.save(
                             VoiceMemo(
                                 title = title,
-                                date = LocalDate.now().toString(),
-                                time = LocalTime.now().toString(),
+                                date = LocalDate.now(),
+                                time = LocalTime.now(),
                                 description = description,
                                 filePath = filePath,
                                 mood = mood!!.toBM(),
