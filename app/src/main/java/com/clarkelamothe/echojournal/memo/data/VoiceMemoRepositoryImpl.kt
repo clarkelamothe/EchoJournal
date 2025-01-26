@@ -28,7 +28,8 @@ class VoiceMemoRepositoryImpl(
                     description = memos.voiceMemo.description,
                     filePath = memos.voiceMemo.filePath,
                     mood = memos.voiceMemo.mood,
-                    topics = memos.topics.map { it.topicTitle }
+                    topics = memos.topics.map { it.topicTitle },
+                    duration = memos.voiceMemo.duration
                 )
             }
         }
@@ -45,7 +46,8 @@ class VoiceMemoRepositoryImpl(
                     time = LocalTime.now().toString(),
                     description = voiceMemo.description,
                     filePath = voiceMemo.filePath,
-                    mood = voiceMemo.mood
+                    mood = voiceMemo.mood,
+                    duration = voiceMemo.duration
                 ),
                 topics = voiceMemo.topics.map { Topic(topicTitle = it) }
             )

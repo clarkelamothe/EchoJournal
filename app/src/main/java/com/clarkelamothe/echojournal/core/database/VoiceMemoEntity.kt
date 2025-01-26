@@ -16,7 +16,8 @@ data class VoiceMemoEntity(
     val time: String,
     val description: String,
     val filePath: String,
-    val mood: Mood
+    val mood: Mood,
+    val duration: String
 )
 
 @Entity

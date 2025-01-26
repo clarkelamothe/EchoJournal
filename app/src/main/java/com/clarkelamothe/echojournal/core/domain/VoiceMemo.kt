@@ -12,5 +12,5 @@ data class VoiceMemo(
     val filePath: String,
     val mood: Mood,
     val topics: List<String> = emptyList(),
-    val duration: String = ""
+    val duration: String
 )
