@@ -334,7 +334,7 @@ fun MemoOverviewScreen(
                         ) {
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                text = date.toString(),
+                                text = date,
                                 modifier = Modifier.padding(top = 12.dp),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
