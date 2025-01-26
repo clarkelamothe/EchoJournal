@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.FlowRowOverflow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,7 +34,7 @@ fun TextExpand(
                     style = style,
                     text = "... Show more",
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable {
+                    modifier = Modifier.wrapContentSize().clickable {
                         onExpand()
                     }
                 )
@@ -41,9 +42,9 @@ fun TextExpand(
             collapseIndicator = {}
         )
     ) {
-        text.split(" ").forEach { word ->
+        text.replace("\n", " ").split(" ").forEach { word ->
             Text(
-                text = word,
+                text = word.trim(),
                 style = style,
                 modifier = Modifier.padding(
                     end = 2.dp
