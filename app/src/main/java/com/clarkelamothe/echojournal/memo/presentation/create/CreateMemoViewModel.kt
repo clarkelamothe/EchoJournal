@@ -14,6 +14,7 @@ import com.clarkelamothe.echojournal.core.presentation.ui.mappers.toBM
 import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
 import com.clarkelamothe.echojournal.memo.domain.AudioPlayer
 import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
+import com.clarkelamothe.echojournal.memo.presentation.formatDuration
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -65,7 +66,7 @@ class CreateMemoViewModel(
                 description = memoState.description,
                 playProgress = player.progress.toFloat(),
                 playerState = player.state,
-                duration = player.duration.toMinutesAndSeconds(),
+                duration = player.duration.formatDuration(),
                 elapsedTime = player.elapsedTime,
                 expand = memoState.expand,
                 topicSuggestion = memoState.topicSuggestion
@@ -79,7 +80,7 @@ class CreateMemoViewModel(
             .onEach { ticker ->
                 player.update {
                     it.copy(
-                        elapsedTime = ticker.toMinutesAndSeconds(),
+                        elapsedTime = ticker.formatDuration(),
                         progress = (ticker / it.duration).coerceIn(0.0, 1.0)
                     )
                 }
@@ -103,10 +104,6 @@ class CreateMemoViewModel(
                 }
             }
             .launchIn(viewModelScope)
-    }
-
-    private fun Duration.toMinutesAndSeconds() = this.toComponents { minutes, seconds, _ ->
-        String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
     }
 
     fun onAction(action: CreateMemoAction) {
@@ -182,7 +179,8 @@ class CreateMemoViewModel(
                                 description = description,
                                 filePath = filePath,
                                 mood = mood!!.toBM(),
-                                topics = topics
+                                topics = topics,
+                                duration = player.value.duration.formatDuration()
                             )
                         )
                     }
@@ -263,8 +261,8 @@ data class CreateMemoState(
     val canSave: Boolean = false,
     val playProgress: Float = 0f,
     val playerState: PlayerState = PlayerState.Idle,
-    val duration: String = "00:00",
-    val elapsedTime: String = "00:00",
+    val duration: String = "0:00",
+    val elapsedTime: String = "0:00",
     val topicSuggestion: List<String> = emptyList(),
     val expand: Boolean = false,
     val showDialog: Boolean = false
@@ -283,5 +281,5 @@ data class Player(
     val state: PlayerState = PlayerState.Idle,
     val progress: Double = 0.0,
     val duration: Duration = Duration.ZERO,
-    val elapsedTime: String = "00:00"
+    val elapsedTime: String = "0:00"
 )

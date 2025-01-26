@@ -107,7 +107,10 @@ fun MemoOverviewScreenRoot(
                 }
                 showBottomSheet(audioPermissionGranted)
             },
-            onClickShowMore = ::onClickShowMore
+            onClickShowMore = ::onClickShowMore,
+            onClickPlay = ::onClickPlay,
+            onClickResume = ::onClickResume,
+            onClickPause = ::onClickPause
         )
 
         if (state.voiceRecorderState.showBottomSheet) {
@@ -139,7 +142,10 @@ fun MemoOverviewScreen(
     onSelectTopic: (String) -> Unit,
     onSettingsClick: () -> Unit,
     onClickFab: () -> Unit,
-    onClickShowMore: () -> Unit
+    onClickShowMore: () -> Unit,
+    onClickPlay: (String) -> Unit,
+    onClickPause: () -> Unit,
+    onClickResume: () -> Unit
 ) {
     EchoJournalScaffold(
         topAppBar = {
@@ -407,14 +413,22 @@ fun MemoOverviewScreen(
 
                                     PlayerBar(
                                         modifier = Modifier,
-                                        playerState = PlayerState.Idle,
-                                        timeStamp = "0:00/${it.duration}",
+                                        playerState = if (it.filePath == state.currentPlayingAudio.filePath) {
+                                            state.currentPlayingAudio.state
+                                        } else PlayerState.Idle,
+                                        timeStamp = "${
+                                            if (it.filePath == state.currentPlayingAudio.filePath) {
+                                                state.currentPlayingAudio.elapsedTime
+                                            } else "0:00"
+                                        }/${it.duration}",
                                         containerColor = it.mood.toVM().color25,
                                         iconColor = it.mood.toVM().color80,
-                                        progress = 0.7f,
-                                        onClickPlay = {},
-                                        onClickPause = {},
-                                        onClickResume = {}
+                                        progress = if (it.filePath == state.currentPlayingAudio.filePath) {
+                                            state.currentPlayingAudio.progress
+                                        } else 0f,
+                                        onClickPlay = { onClickPlay(it.filePath) },
+                                        onClickPause = onClickPause,
+                                        onClickResume = onClickResume
                                     )
 
                                     TextExpand(
@@ -484,7 +498,10 @@ private fun MemoOverviewScreenPreview() {
             onSelectTopic = {},
             onSettingsClick = {},
             onClickFab = {},
-            onClickShowMore = {}
+            onClickShowMore = {},
+            onClickPlay = {},
+            onClickPause = {},
+            onClickResume = {}
         )
     }
 }

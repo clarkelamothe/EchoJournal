@@ -10,6 +10,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clarkelamothe.echojournal.core.domain.VoiceMemo
+import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerState
 import com.clarkelamothe.echojournal.core.presentation.designsystem.RecordingState
 import com.clarkelamothe.echojournal.core.presentation.ui.mappers.toVM
 import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
@@ -40,7 +41,7 @@ class MemoOverviewViewModel(
     private val player: AudioPlayer,
     private val recorder: AudioRecorder
 ) : ViewModel() {
-    private var filePath: String = ""
+    private var recordingFilePath: String = ""
 
     var state by mutableStateOf<MemoOverviewState>(MemoOverviewState.VoiceMemos())
         private set
@@ -52,6 +53,8 @@ class MemoOverviewViewModel(
     private val observeAmplitudes = MutableStateFlow(false)
     private val lastEmitted = MutableStateFlow(Duration.ZERO)
     private val descriptionMaxLines = MutableStateFlow(3)
+    private val observeCurrentPlayingAudio = MutableStateFlow(false)
+    private val currentPlayingAudio = MutableStateFlow(CurrentPlayingAudio())
     private val amplitudes = MutableStateFlow<List<Int>>(emptyList())
 
     private val eventChannel = Channel<MemoOverviewEvent>()
@@ -62,8 +65,9 @@ class MemoOverviewViewModel(
             repository.getAll(),
             filterState,
             voiceRecorderState,
-            descriptionMaxLines
-        ) { memos, filterState, voiceRecorder, maxLines ->
+            descriptionMaxLines,
+            currentPlayingAudio,
+        ) { memos, filterState, voiceRecorder, maxLines, currentPlayingAudio ->
             state =
                 if (memos.isEmpty()) {
                     MemoOverviewState.Empty(
@@ -77,17 +81,19 @@ class MemoOverviewViewModel(
 
                     (state as MemoOverviewState.VoiceMemos).copy(
                         moodChipLabel = filterState.moodLabel(selectedMoods),
-                        topicChipLabel = filterState.topicsLabel(selectedTopics, filterState.topics),
+                        topicChipLabel = filterState.topicsLabel(
+                            selectedTopics,
+                            filterState.topics
+                        ),
                         selectedMood = selectedMoods,
                         selectedTopics = selectedTopics,
                         voiceRecorderState = voiceRecorder,
                         memos = voiceMemos
                             .map {
-                                player.init(it.filePath)
                                 it.copy(
                                     date = it.date,
                                     time = it.time.formatTime().toLocalTime(),
-                                    duration = player.duration().formatDuration()
+                                    duration = it.duration
                                 )
                             }.sortedByDescending {
                                 it.date
@@ -95,7 +101,8 @@ class MemoOverviewViewModel(
                             .groupBy { it.date }
                             .mapKeys { it.key.formatDate() },
                         topics = filterState.topics,
-                        descriptionMaxLine = maxLines
+                        descriptionMaxLine = maxLines,
+                        currentPlayingAudio = currentPlayingAudio
                     )
                 }
         }.launchIn(viewModelScope)
@@ -125,6 +132,21 @@ class MemoOverviewViewModel(
                         amplitudes = recorderState.amplitudes + recorder.maxAmp()
                     )
                 }
+            }
+            .launchIn(viewModelScope)
+
+        observeCurrentPlayingAudio
+            .flatMapLatest {
+                player.observerPosition(it)
+            }
+            .onEach {
+                currentPlayingAudio
+                    .update { currentPlayingAudio ->
+                        currentPlayingAudio.copy(
+                            elapsedTime = it.formatDuration(),
+                            progress = (it / player.duration()).coerceIn(0.0, 1.0).toFloat()
+                        )
+                    }
             }
             .launchIn(viewModelScope)
     }
@@ -191,7 +213,7 @@ class MemoOverviewViewModel(
                 title = RecordingState.Recording.getTitle()
             )
         }
-        filePath = recorder.start("memo")
+        recordingFilePath = recorder.start("memo")
     }
 
     fun pauseRecording() {
@@ -222,7 +244,7 @@ class MemoOverviewViewModel(
         lastEmitted.update { Duration.ZERO }
         recorder.stop()
         viewModelScope.launch {
-            eventChannel.send(MemoOverviewEvent.VoiceMemoRecorded(filePath))
+            eventChannel.send(MemoOverviewEvent.VoiceMemoRecorded(recordingFilePath))
         }
     }
 
@@ -247,6 +269,37 @@ class MemoOverviewViewModel(
         descriptionMaxLines.update { Int.MAX_VALUE }
     }
 
+    fun onClickPlay(filePath: String) {
+        player.stop()
+        observeCurrentPlayingAudio.update { false }
+
+        currentPlayingAudio.apply {
+            player.init(filePath)
+            update {
+                it.copy(
+                    state = PlayerState.Playing,
+                    filePath = filePath
+                )
+            }
+            player.start {
+                update { it.copy(state = PlayerState.Idle) }
+                player.stop()
+                observeCurrentPlayingAudio.update { false }
+            }
+            observeCurrentPlayingAudio.update { true }
+        }
+    }
+
+    fun onClickPause() {
+        player.pause()
+        currentPlayingAudio.update { it.copy(state = PlayerState.Paused) }
+    }
+
+    fun onClickResume() {
+        player.resume()
+        currentPlayingAudio.update { it.copy(state = PlayerState.Playing) }
+    }
+
     private fun tickerFlow(
         start: Boolean,
         period: Duration = 1.seconds,
@@ -260,3 +313,11 @@ class MemoOverviewViewModel(
         }
     }
 }
+
+data class CurrentPlayingAudio(
+    val state: PlayerState = PlayerState.Idle,
+    val filePath: String = "",
+    val progress: Float = 0f,
+    val elapsedTime: String = "0:00",
+    val duration: String = ""
+)
