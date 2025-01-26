@@ -43,7 +43,7 @@ class MemoOverviewViewModel(
 ) : ViewModel() {
     private var recordingFilePath: String = ""
 
-    var state by mutableStateOf<MemoOverviewState>(MemoOverviewState.VoiceMemos())
+    var state by mutableStateOf(MemoOverviewState())
         private set
 
     private val filterState = MutableStateFlow(FilterState())
@@ -68,43 +68,36 @@ class MemoOverviewViewModel(
             descriptionMaxLines,
             currentPlayingAudio,
         ) { memos, filterState, voiceRecorder, maxLines, currentPlayingAudio ->
-            state =
-                if (memos.isEmpty()) {
-                    MemoOverviewState.Empty(
-                        voiceRecorderState = voiceRecorder
-                    )
-                } else {
-                    val selectedTopics = filterState.selectedTopics
-                    val selectedMoods = filterState.selectedMoods
+            val selectedTopics = filterState.selectedTopics
+            val selectedMoods = filterState.selectedMoods
 
-                    val voiceMemos = filteredVoiceMemos(selectedMoods, selectedTopics, memos)
+            val voiceMemos = filteredVoiceMemos(selectedMoods, selectedTopics, memos)
 
-                    (state as MemoOverviewState.VoiceMemos).copy(
-                        moodChipLabel = filterState.moodLabel(selectedMoods),
-                        topicChipLabel = filterState.topicsLabel(
-                            selectedTopics,
-                            filterState.topics
-                        ),
-                        selectedMood = selectedMoods,
-                        selectedTopics = selectedTopics,
-                        voiceRecorderState = voiceRecorder,
-                        memos = voiceMemos
-                            .map {
-                                it.copy(
-                                    date = it.date,
-                                    time = it.time.formatTime().toLocalTime(),
-                                    duration = it.duration
-                                )
-                            }.sortedByDescending {
-                                it.date
-                            }
-                            .groupBy { it.date }
-                            .mapKeys { it.key.formatDate() },
-                        topics = filterState.topics,
-                        descriptionMaxLine = maxLines,
-                        currentPlayingAudio = currentPlayingAudio
-                    )
-                }
+            state = state.copy(
+                moodChipLabel = filterState.moodLabel(selectedMoods),
+                topicChipLabel = filterState.topicsLabel(
+                    selectedTopics,
+                    filterState.topics
+                ),
+                selectedMood = selectedMoods,
+                selectedTopics = selectedTopics,
+                voiceRecorderState = voiceRecorder,
+                memos = voiceMemos
+                    .map {
+                        it.copy(
+                            date = it.date,
+                            time = it.time.formatTime().toLocalTime(),
+                            duration = it.duration
+                        )
+                    }.sortedByDescending {
+                        it.date
+                    }
+                    .groupBy { it.date }
+                    .mapKeys { it.key.formatDate() },
+                topics = filterState.topics,
+                descriptionMaxLine = maxLines,
+                currentPlayingAudio = currentPlayingAudio
+            )
         }.launchIn(viewModelScope)
 
         repository.getAllTopics()

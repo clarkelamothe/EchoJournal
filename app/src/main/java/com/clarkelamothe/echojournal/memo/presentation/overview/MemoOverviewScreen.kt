@@ -48,6 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.clarkelamothe.echojournal.R
 import com.clarkelamothe.echojournal.core.domain.Mood
 import com.clarkelamothe.echojournal.core.domain.VoiceMemo
@@ -162,9 +163,9 @@ fun MemoOverviewScreen(
             )
         }
     ) { paddingValues ->
-        when (state) {
-            is MemoOverviewState.Empty -> EmptyStateScreen(Modifier.fillMaxSize())
-            is MemoOverviewState.VoiceMemos -> {
+        when (state.memos.isEmpty()) {
+            true -> EmptyStateScreen(Modifier.fillMaxSize())
+            else -> {
                 val menuWidth = LocalConfiguration.current.screenWidthDp.dp - 32.dp
                 var cardHeight by remember { mutableIntStateOf(0) }
 
@@ -333,7 +334,7 @@ fun MemoOverviewScreen(
                         }
                     }
 
-                    state.memos.map { (date, memos) ->
+                    state.memos?.map { (date, memos) ->
                         item(
                             key = "day-$date",
                             contentType = "Day"
@@ -470,7 +471,7 @@ fun MemoOverviewScreen(
 private fun MemoOverviewScreenPreview() {
     EchoJournalTheme {
         MemoOverviewScreen(
-            state = MemoOverviewState.VoiceMemos(
+            state = MemoOverviewState(
                 moodChipLabel = "All Moods",
                 topicChipLabel = "Sad, Excited +2",
                 moods = listOf(MoodVM.Neutral, MoodVM.Sad, MoodVM.Peaceful),
