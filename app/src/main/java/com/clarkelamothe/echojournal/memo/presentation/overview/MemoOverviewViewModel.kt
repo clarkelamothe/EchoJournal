@@ -60,11 +60,10 @@ class MemoOverviewViewModel(
     init {
         combine(
             repository.getAll(),
-            repository.getAllTopics(),
             filterState,
             voiceRecorderState,
             descriptionMaxLines
-        ) { memos, initialTopics, filterState, voiceRecorder, maxLines ->
+        ) { memos, filterState, voiceRecorder, maxLines ->
             state =
                 if (memos.isEmpty()) {
                     MemoOverviewState.Empty(
@@ -78,7 +77,7 @@ class MemoOverviewViewModel(
 
                     (state as MemoOverviewState.VoiceMemos).copy(
                         moodChipLabel = filterState.moodLabel(selectedMoods),
-                        topicChipLabel = filterState.topicsLabel(selectedTopics, initialTopics),
+                        topicChipLabel = filterState.topicsLabel(selectedTopics, filterState.topics),
                         selectedMood = selectedMoods,
                         selectedTopics = selectedTopics,
                         voiceRecorderState = voiceRecorder,
@@ -95,11 +94,19 @@ class MemoOverviewViewModel(
                             }
                             .groupBy { it.date }
                             .mapKeys { it.key.formatDate() },
-                        topics = initialTopics,
+                        topics = filterState.topics,
                         descriptionMaxLine = maxLines
                     )
                 }
         }.launchIn(viewModelScope)
+
+        repository.getAllTopics()
+            .onEach { initialTopics ->
+                filterState.update {
+                    it.copy(topics = initialTopics)
+                }
+            }
+            .launchIn(viewModelScope)
 
         shouldStartTimer
             .flatMapLatest {
