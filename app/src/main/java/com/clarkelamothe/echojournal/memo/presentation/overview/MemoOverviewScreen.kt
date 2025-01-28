@@ -12,9 +12,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,10 +30,10 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -40,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -48,7 +49,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.clarkelamothe.echojournal.R
 import com.clarkelamothe.echojournal.core.domain.Mood
 import com.clarkelamothe.echojournal.core.domain.VoiceMemo
@@ -67,6 +67,7 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.components.i
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.CloseIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.components.icons.HashtagIcon
 import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.EchoJournalTheme
+import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.NeutralVariant90
 import com.clarkelamothe.echojournal.core.presentation.ui.ObserveAsEvents
 import com.clarkelamothe.echojournal.core.presentation.ui.mappers.toVM
 import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
@@ -167,7 +168,6 @@ fun MemoOverviewScreen(
             true -> EmptyStateScreen(Modifier.fillMaxSize())
             else -> {
                 val menuWidth = LocalConfiguration.current.screenWidthDp.dp - 32.dp
-                var cardHeight by remember { mutableIntStateOf(0) }
 
                 var isMoodsChipClick by remember { mutableStateOf(false) }
                 var isTopicsChipClick by remember { mutableStateOf(false) }
@@ -334,7 +334,7 @@ fun MemoOverviewScreen(
                         }
                     }
 
-                    state.memos?.map { (date, memos) ->
+                    state.memos.map { (date, memos) ->
                         item(
                             key = "day-$date",
                             contentType = "Day"
@@ -354,10 +354,8 @@ fun MemoOverviewScreen(
                         ) {
                             Row(
                                 modifier = Modifier
-                                    .fillParentMaxWidth()
-                                    .onSizeChanged {
-                                        cardHeight = it.height
-                                    },
+                                    .height(IntrinsicSize.Min)
+                                    .fillParentMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 Column(
@@ -370,16 +368,12 @@ fun MemoOverviewScreen(
                                         tint = Color.Unspecified
                                     )
 
-//                                    if (memos.last() != it) {
-//                                        VerticalDivider(
-//                                            modifier = Modifier.height(
-//                                                with(LocalDensity.current) {
-//                                                    cardHeight.toDp().plus(16.dp)
-//                                                }
-//                                            ),
-//                                            color = NeutralVariant90
-//                                        )
-//                                    }
+                                    if (memos.last() != it) {
+                                        VerticalDivider(
+                                            modifier = Modifier.fillMaxHeight(),
+                                            color = NeutralVariant90
+                                        )
+                                    }
                                 }
 
                                 Column(
@@ -391,7 +385,7 @@ fun MemoOverviewScreen(
                                             spotColor = MaterialTheme.colorScheme.primary
                                         )
                                         .background(MaterialTheme.colorScheme.surface)
-                                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                                        .padding(14.dp),
                                     verticalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
                                     Row(
@@ -432,28 +426,31 @@ fun MemoOverviewScreen(
                                         onClickResume = onClickResume
                                     )
 
-                                    TextExpand(
-                                        modifier = Modifier.fillMaxSize(),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        maxLines = state.descriptionMaxLine,
-                                        text = it.description,
-                                        onExpand = onClickShowMore
-                                    )
+                                    if (it.description.isNotEmpty()) {
+                                        TextExpand(
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            maxLines = state.descriptionMaxLine,
+                                            text = it.description,
+                                            onExpand = onClickShowMore
+                                        )
+                                    }
 
-                                    FlowRow(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                        verticalArrangement = Arrangement.Center
-                                    ) {
-                                        it.topics.map { topic ->
-                                            Chip(
-                                                modifier = Modifier,
-                                                text = topic,
-                                                selected = true,
-                                                onClick = {
-                                                    onSelectTopic(topic)
-                                                }
-                                            )
+                                    if (it.topics.isNotEmpty()) {
+                                        FlowRow(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            it.topics.map { topic ->
+                                                Chip(
+                                                    modifier = Modifier,
+                                                    text = topic,
+                                                    selected = true,
+                                                    onClick = {
+                                                        onSelectTopic(topic)
+                                                    }
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -488,6 +485,16 @@ private fun MemoOverviewScreenPreview() {
                             description = "If a voice memo’s play button is pressed, possible playback for other memos should stop and the new memo should start playing.",
                             filePath = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id venenatis justo, vel tristique magna. Donec id lectus sit amet tortor tempor porttitor. Aenean egestas lectus id lectus varius, sit amet laoreet justo tempus. Sed varius mauris nunc, non porta enim finibus pellentesque. Maecenas vitae massa ac nibh porttitor ultricies eget vel enim.",
                             mood = Mood.Sad,
+                            duration = "0:00"
+                        ),
+                        VoiceMemo(
+                            id = 1,
+                            title = "My Entry",
+                            date = LocalDate.now(),
+                            time = LocalTime.now(),
+                            description = "If a voice memo’s play button is pressed, possible playback for other memos should stop and the new memo should start playing.",
+                            filePath = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id venenatis justo, vel tristique magna. Donec id lectus sit amet tortor tempor porttitor. Aenean egestas lectus id lectus varius, sit amet laoreet justo tempus. Sed varius mauris nunc, non porta enim finibus pellentesque. Maecenas vitae massa ac nibh porttitor ultricies eget vel enim.",
+                            mood = Mood.Neutral,
                             duration = "0:00"
                         )
                     )

@@ -1,10 +1,10 @@
 package com.clarkelamothe.echojournal.core.presentation.designsystem
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.FlowRowOverflow
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.MaterialTheme
@@ -26,7 +26,9 @@ fun TextExpand(
     onExpand: () -> Unit
 ) {
     FlowRow(
-        modifier = modifier.fillMaxSize(),
+        horizontalArrangement = Arrangement.Start,
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier.wrapContentSize(),
         maxLines = maxLines,
         overflow = FlowRowOverflow.expandOrCollapseIndicator(
             expandIndicator = {
@@ -47,7 +49,7 @@ fun TextExpand(
                 text = word.trim(),
                 style = style,
                 modifier = Modifier.padding(
-                    end = 2.dp
+                    end = 4.dp
                 )
             )
         }
