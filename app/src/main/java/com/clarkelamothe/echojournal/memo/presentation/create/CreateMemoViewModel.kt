@@ -116,6 +116,7 @@ class CreateMemoViewModel(
             CreateMemoAction.OnConfirmDialog -> {
                 state = state.copy(showDialog = false)
                 viewModelScope.launch {
+                    // todo delete temp file
                     eventChannel.send(CreateMemoEvent.MemoCancelled)
                 }
             }
@@ -162,6 +163,7 @@ class CreateMemoViewModel(
                 observeElapseTime.update { false }
                 player.update { it.copy(state = PlayerState.Idle) }
                 viewModelScope.launch {
+                    // todo delete temp file
                     eventChannel.send(CreateMemoEvent.MemoCancelled)
                 }
             }
@@ -178,16 +180,13 @@ class CreateMemoViewModel(
                                 date = LocalDate.now(),
                                 time = LocalTime.now(),
                                 description = description,
-                                filePath = filePath,
+                                filePath = filePath,  // TODO move file to a non temp directory and save
                                 mood = mood!!.toBM(),
                                 topics = topics,
                                 duration = player.value.duration.formatDuration()
                             )
                         )
                     }
-                }
-
-                viewModelScope.launch {
                     eventChannel.send(CreateMemoEvent.MemoSaved)
                 }
             }

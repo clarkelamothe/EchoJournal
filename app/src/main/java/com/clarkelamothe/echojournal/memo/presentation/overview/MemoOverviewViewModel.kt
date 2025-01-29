@@ -56,7 +56,6 @@ class MemoOverviewViewModel(
     private val descriptionMaxLines = MutableStateFlow(3)
     private val observeCurrentPlayingAudio = MutableStateFlow(false)
     private val currentPlayingAudio = MutableStateFlow(CurrentPlayingAudio())
-    private val amplitudes = MutableStateFlow<List<Int>>(emptyList())
 
     private val eventChannel = Channel<MemoOverviewEvent>()
     val events = eventChannel.receiveAsFlow()
@@ -235,6 +234,7 @@ class MemoOverviewViewModel(
             it.copy(showBottomSheet = false)
         }
         recorder.stop()
+        // TODO delete temp file
     }
 
     fun finishRecording() {
