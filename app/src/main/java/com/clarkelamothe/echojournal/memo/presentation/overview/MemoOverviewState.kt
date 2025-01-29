@@ -4,6 +4,7 @@ import com.clarkelamothe.echojournal.core.domain.VoiceMemo
 import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
 
 data class MemoOverviewState(
+    val showEmptyState: Boolean = false,
     val moodChipLabel: String = "",
     val topicChipLabel: String = "",
     val moods: List<MoodVM> = MoodVM.entries,

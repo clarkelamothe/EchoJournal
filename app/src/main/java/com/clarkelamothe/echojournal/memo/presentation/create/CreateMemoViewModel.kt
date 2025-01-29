@@ -28,7 +28,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.Locale
 import kotlin.time.Duration
 
 class CreateMemoViewModel(

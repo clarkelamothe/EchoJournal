@@ -181,7 +181,7 @@ fun MemoOverviewScreen(
             )
         }
     ) { paddingValues ->
-        when (state.memos.isEmpty()) {
+        when (state.showEmptyState) {
             true -> EmptyStateScreen(Modifier.fillMaxSize())
             else -> {
                 val menuWidth = LocalConfiguration.current.screenWidthDp.dp - 32.dp
