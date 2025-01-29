@@ -34,11 +34,13 @@ fun TextExpand(
             expandIndicator = {
                 Text(
                     style = style,
-                    text = "... Show more",
+                    text = if (maxLines > 3) "" else "... Show more", /* For some devices expandIndicator won't disappear TODO check why */
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.wrapContentSize().clickable {
-                        onExpand()
-                    }
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .clickable {
+                            onExpand()
+                        }
                 )
             },
             collapseIndicator = {}
