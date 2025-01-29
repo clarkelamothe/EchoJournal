@@ -3,6 +3,7 @@
 package com.clarkelamothe.echojournal.memo.presentation.overview
 
 import android.Manifest.permission.RECORD_AUDIO
+import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
@@ -43,12 +44,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.clarkelamothe.echojournal.R
@@ -82,11 +85,13 @@ fun MemoOverviewScreenRoot(
     onSettingsClick: () -> Unit,
     onVoiceMemoRecorded: (filePath: String) -> Unit
 ) {
+    val context = LocalContext.current
+
     var audioPermissionGranted by remember { mutableStateOf(false) }
     val audioPermissionResultLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
-    ) {
-        audioPermissionGranted = it
+    ) { isGranted ->
+        audioPermissionGranted = isGranted
     }
 
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
@@ -111,10 +116,15 @@ fun MemoOverviewScreenRoot(
             onSelectTopic = ::onSelect,
             onSettingsClick = onSettingsClick,
             onClickFab = {
-                if (!audioPermissionGranted) {
+                val granted = ContextCompat.checkSelfPermission(
+                    context,
+                    RECORD_AUDIO
+                ) == PackageManager.PERMISSION_GRANTED
+                if (!granted) {
                     audioPermissionResultLauncher.launch(RECORD_AUDIO)
                 }
-                showBottomSheet(audioPermissionGranted)
+
+                showBottomSheet(granted)
             },
             onClickShowMore = ::onClickShowMore,
             onClickPlay = ::onClickPlay,
