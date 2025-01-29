@@ -145,7 +145,7 @@ class MemoOverviewViewModel(
                 )
             }.sortedByDescending { it.date }
             .groupBy { it.date }
-            .mapKeys { it.key.formatDate() }
+            .mapKeys { it.key.formatDate().uppercase() }
             .mapValues { values ->
                 values.value.sortedBy { it.time }
             }

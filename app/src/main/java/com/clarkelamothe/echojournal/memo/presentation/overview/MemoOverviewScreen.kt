@@ -229,6 +229,7 @@ fun MemoOverviewScreen(
 
                             // Topic Chip
                             EchoJournalChip(
+                                enabled = state.topics.isNotEmpty(),
                                 selected = isTopicsChipClick || state.selectedTopics.isNotEmpty(),
                                 onClick = {
                                     isTopicsChipClick = !isTopicsChipClick

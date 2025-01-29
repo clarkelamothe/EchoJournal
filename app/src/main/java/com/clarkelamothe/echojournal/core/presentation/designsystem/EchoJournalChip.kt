@@ -20,12 +20,14 @@ import com.clarkelamothe.echojournal.core.presentation.designsystem.theme.EchoJo
 @Composable
 fun EchoJournalChip(
     selected: Boolean = false,
+    enabled: Boolean = true,
     onClick: () -> Unit,
     label: @Composable () -> Unit,
     avatar: @Composable () -> Unit,
     trailingIcon: @Composable () -> Unit
 ) {
     InputChip(
+        enabled = enabled,
         selected = selected,
         onClick = onClick,
         label = label,
