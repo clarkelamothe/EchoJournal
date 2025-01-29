@@ -58,6 +58,8 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.clarkelamothe.echojournal.R
 import com.clarkelamothe.echojournal.core.presentation.designsystem.Chip
 import com.clarkelamothe.echojournal.core.presentation.designsystem.DropdownItem
@@ -89,6 +91,10 @@ fun CreateMemoScreenRoot(
             CreateMemoEvent.MemoSaved,
             CreateMemoEvent.MemoCancelled -> onBackClick()
         }
+    }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+        viewModel.onAction(CreateMemoAction.OnPauseClick)
     }
 
     CreateMemoScreen(

@@ -18,6 +18,7 @@ import com.clarkelamothe.echojournal.memo.presentation.formatDuration
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
@@ -77,6 +78,7 @@ class CreateMemoViewModel(
             .flatMapLatest {
                 audioPlayer.observerPosition(it)
             }
+            .distinctUntilChanged()
             .onEach { ticker ->
                 player.update {
                     it.copy(
