@@ -82,18 +82,7 @@ class MemoOverviewViewModel(
                 selectedMood = selectedMoods,
                 selectedTopics = selectedTopics,
                 voiceRecorderState = voiceRecorder,
-                memos = voiceMemos
-                    .map {
-                        it.copy(
-                            date = it.date,
-                            time = it.time.formatTime().toLocalTime(),
-                            duration = it.duration
-                        )
-                    }.sortedByDescending {
-                        it.date
-                    }
-                    .groupBy { it.date }
-                    .mapKeys { it.key.formatDate() },
+                memos = sortedVoiceMemos(voiceMemos),
                 topics = filterState.topics,
                 descriptionMaxLine = maxLines,
                 currentPlayingAudio = currentPlayingAudio
@@ -143,6 +132,21 @@ class MemoOverviewViewModel(
             }
             .launchIn(viewModelScope)
     }
+
+    private fun sortedVoiceMemos(voiceMemos: List<VoiceMemo>) =
+        voiceMemos
+            .map {
+                it.copy(
+                    date = it.date,
+                    time = it.time.formatTime().toLocalTime(),
+                    duration = it.duration
+                )
+            }.sortedByDescending { it.date }
+            .groupBy { it.date }
+            .mapKeys { it.key.formatDate() }
+            .mapValues { values ->
+                values.value.sortedBy { it.time }
+            }
 
     private fun filteredVoiceMemos(
         selectedMoods: List<MoodVM>,

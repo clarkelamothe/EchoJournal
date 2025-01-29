@@ -24,7 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
@@ -175,11 +175,11 @@ fun MemoOverviewScreen(
                 LazyColumn(
                     modifier = Modifier
                         .padding(paddingValues),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(bottom = 140.dp)
                 ) {
                     item(contentType = "Filters") {
                         FlowRow(
+                            verticalArrangement = Arrangement.Center,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             // Moods Chip
@@ -339,19 +339,20 @@ fun MemoOverviewScreen(
                             key = "day-$date",
                             contentType = "Day"
                         ) {
-                            Spacer(Modifier.height(4.dp))
+                            Spacer(Modifier.height(16.dp))
                             Text(
                                 text = date,
                                 modifier = Modifier.padding(top = 12.dp),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
+                            Spacer(Modifier.height(16.dp))
                         }
 
-                        items(
+                        itemsIndexed(
                             items = memos,
-                            key = { it.id }
-                        ) {
+                            key = { _, item -> item.id }
+                        ) { index, item ->
                             Row(
                                 modifier = Modifier
                                     .height(IntrinsicSize.Min)
@@ -362,15 +363,24 @@ fun MemoOverviewScreen(
                                     modifier = Modifier.wrapContentHeight(),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
+                                    if (index != 0) {
+                                        VerticalDivider(
+                                            modifier = Modifier.height(8.dp),
+                                            color = NeutralVariant90
+                                        )
+                                    } else {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                    }
                                     Icon(
-                                        imageVector = ImageVector.vectorResource(it.mood.toVM().icon),
+                                        imageVector = ImageVector.vectorResource(item.mood.toVM().icon),
                                         contentDescription = null,
                                         tint = Color.Unspecified
                                     )
 
-                                    if (memos.last() != it) {
+                                    if (index != memos.lastIndex) {
                                         VerticalDivider(
-                                            modifier = Modifier.fillMaxHeight(),
+                                            modifier = Modifier
+                                                .fillMaxHeight(),
                                             color = NeutralVariant90
                                         )
                                     }
@@ -395,12 +405,12 @@ fun MemoOverviewScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = it.title,
+                                            text = item.title,
                                             style = MaterialTheme.typography.headlineSmall,
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
                                         Text(
-                                            text = it.time.toString(),
+                                            text = item.time.toString(),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -408,40 +418,40 @@ fun MemoOverviewScreen(
 
                                     PlayerBar(
                                         modifier = Modifier,
-                                        playerState = if (it.filePath == state.currentPlayingAudio.filePath) {
+                                        playerState = if (item.filePath == state.currentPlayingAudio.filePath) {
                                             state.currentPlayingAudio.state
                                         } else PlayerState.Idle,
                                         timeStamp = "${
-                                            if (it.filePath == state.currentPlayingAudio.filePath) {
+                                            if (item.filePath == state.currentPlayingAudio.filePath) {
                                                 state.currentPlayingAudio.elapsedTime
                                             } else "0:00"
-                                        }/${it.duration}",
-                                        containerColor = it.mood.toVM().color25,
-                                        iconColor = it.mood.toVM().color80,
-                                        progress = if (it.filePath == state.currentPlayingAudio.filePath) {
+                                        }/${item.duration}",
+                                        containerColor = item.mood.toVM().color25,
+                                        iconColor = item.mood.toVM().color80,
+                                        progress = if (item.filePath == state.currentPlayingAudio.filePath) {
                                             state.currentPlayingAudio.progress
                                         } else 0f,
-                                        onClickPlay = { onClickPlay(it.filePath) },
+                                        onClickPlay = { onClickPlay(item.filePath) },
                                         onClickPause = onClickPause,
                                         onClickResume = onClickResume
                                     )
 
-                                    if (it.description.isNotEmpty()) {
+                                    if (item.description.isNotEmpty()) {
                                         TextExpand(
                                             style = MaterialTheme.typography.bodyMedium,
                                             maxLines = state.descriptionMaxLine,
-                                            text = it.description,
+                                            text = item.description,
                                             onExpand = onClickShowMore
                                         )
                                     }
 
-                                    if (it.topics.isNotEmpty()) {
+                                    if (item.topics.isNotEmpty()) {
                                         FlowRow(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                                             verticalArrangement = Arrangement.Center
                                         ) {
-                                            it.topics.map { topic ->
+                                            item.topics.map { topic ->
                                                 Chip(
                                                     modifier = Modifier,
                                                     text = topic,
@@ -454,6 +464,14 @@ fun MemoOverviewScreen(
                                         }
                                     }
                                 }
+                            }
+                            if (index != memos.lastIndex) {
+                                VerticalDivider(
+                                    modifier = Modifier
+                                        .height(16.dp)
+                                        .padding(start = (15.5).dp),
+                                    color = NeutralVariant90
+                                )
                             }
                         }
                     }
