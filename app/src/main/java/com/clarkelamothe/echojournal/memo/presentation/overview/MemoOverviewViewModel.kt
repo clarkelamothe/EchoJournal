@@ -146,7 +146,7 @@ class MemoOverviewViewModel(
             .groupBy { it.date }
             .mapKeys { it.key.formatDate().uppercase() }
             .mapValues { values ->
-                values.value.sortedBy { it.time }
+                values.value.sortedByDescending { it.time }
             }
 
     private fun filteredVoiceMemos(
