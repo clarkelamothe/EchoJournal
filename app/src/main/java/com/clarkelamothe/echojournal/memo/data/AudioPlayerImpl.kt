@@ -4,23 +4,24 @@ import android.content.Context
 import android.media.MediaPlayer
 import androidx.core.net.toUri
 import com.clarkelamothe.echojournal.memo.domain.AudioPlayer
+import com.clarkelamothe.echojournal.memo.domain.FileManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
-import java.io.File
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.ZERO
 import kotlin.time.Duration.Companion.milliseconds
 
 class AudioPlayerImpl(
-    private val context: Context
+    private val context: Context,
+    private val fileManager: FileManager
 ) : AudioPlayer {
     private var player: MediaPlayer? = null
 
     override fun init(filePath: String) {
-        val file = File(filePath)
+        val file = fileManager.getFile(filePath)
         player = MediaPlayer.create(
             context,
-            file.toUri()
+            file?.toUri()
         )
     }
 

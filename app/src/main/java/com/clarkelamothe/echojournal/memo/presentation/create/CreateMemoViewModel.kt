@@ -1,4 +1,5 @@
 @file:Suppress("OPT_IN_USAGE")
+@file:OptIn(ExperimentalUuidApi::class)
 
 package com.clarkelamothe.echojournal.memo.presentation.create
 
@@ -8,11 +9,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clarkelamothe.echojournal.EchoJournalApp
 import com.clarkelamothe.echojournal.core.domain.VoiceMemo
 import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerState
 import com.clarkelamothe.echojournal.core.presentation.ui.mappers.toBM
 import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
 import com.clarkelamothe.echojournal.memo.domain.AudioPlayer
+import com.clarkelamothe.echojournal.memo.domain.FileManager
 import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
 import com.clarkelamothe.echojournal.memo.presentation.formatDuration
 import kotlinx.coroutines.channels.Channel
@@ -29,11 +32,14 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.time.Duration
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 class CreateMemoViewModel(
     private val filePath: String,
     private val audioPlayer: AudioPlayer,
-    private val repository: VoiceMemoRepository
+    private val repository: VoiceMemoRepository,
+    private val fileManager: FileManager = EchoJournalApp.fileManager
 ) : ViewModel() {
     private val eventChannel = Channel<CreateMemoEvent>()
     val events = eventChannel.receiveAsFlow()
@@ -116,7 +122,7 @@ class CreateMemoViewModel(
             CreateMemoAction.OnConfirmDialog -> {
                 state = state.copy(showDialog = false)
                 viewModelScope.launch {
-                    // todo delete temp file
+                    fileManager.getFile(filePath)?.delete()
                     eventChannel.send(CreateMemoEvent.MemoCancelled)
                 }
             }
@@ -163,7 +169,7 @@ class CreateMemoViewModel(
                 observeElapseTime.update { false }
                 player.update { it.copy(state = PlayerState.Idle) }
                 viewModelScope.launch {
-                    // todo delete temp file
+                    fileManager.getFile(filePath)?.delete()
                     eventChannel.send(CreateMemoEvent.MemoCancelled)
                 }
             }
@@ -174,13 +180,19 @@ class CreateMemoViewModel(
 
                 viewModelScope.launch {
                     with(memoState.value) {
+                        val movedFilePath = fileManager.moveAndRenameFile(
+                            filePath,
+                            "$title-${Uuid.random()}",
+                            ".mp3"
+                        ).absolutePath
+
                         repository.save(
                             VoiceMemo(
                                 title = title,
                                 date = LocalDate.now(),
                                 time = LocalTime.now(),
                                 description = description,
-                                filePath = filePath,  // TODO move file to a non temp directory and save
+                                filePath = movedFilePath,
                                 mood = mood!!.toBM(),
                                 topics = topics,
                                 duration = player.value.duration.formatDuration()

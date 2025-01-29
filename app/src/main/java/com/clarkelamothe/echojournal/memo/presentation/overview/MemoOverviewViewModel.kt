@@ -9,6 +9,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clarkelamothe.echojournal.EchoJournalApp
 import com.clarkelamothe.echojournal.core.domain.VoiceMemo
 import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerState
 import com.clarkelamothe.echojournal.core.presentation.designsystem.RecordingState
@@ -16,6 +17,7 @@ import com.clarkelamothe.echojournal.core.presentation.ui.mappers.toVM
 import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
 import com.clarkelamothe.echojournal.memo.domain.AudioPlayer
 import com.clarkelamothe.echojournal.memo.domain.AudioRecorder
+import com.clarkelamothe.echojournal.memo.domain.FileManager
 import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
 import com.clarkelamothe.echojournal.memo.presentation.formatDate
 import com.clarkelamothe.echojournal.memo.presentation.formatDuration
@@ -40,7 +42,8 @@ import kotlin.time.Duration.Companion.seconds
 class MemoOverviewViewModel(
     repository: VoiceMemoRepository,
     private val player: AudioPlayer,
-    private val recorder: AudioRecorder
+    private val recorder: AudioRecorder,
+    private val fileManager: FileManager = EchoJournalApp.fileManager
 ) : ViewModel() {
     private var recordingFilePath: String = ""
 
@@ -234,7 +237,7 @@ class MemoOverviewViewModel(
             it.copy(showBottomSheet = false)
         }
         recorder.stop()
-        // TODO delete temp file
+        fileManager.getFile(recordingFilePath)?.delete()
     }
 
     fun finishRecording() {

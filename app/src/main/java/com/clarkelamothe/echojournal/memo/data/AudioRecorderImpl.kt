@@ -4,10 +4,11 @@ import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build
 import com.clarkelamothe.echojournal.memo.domain.AudioRecorder
-import java.io.File
+import com.clarkelamothe.echojournal.memo.domain.FileManager
 
 class AudioRecorderImpl(
-    private val context: Context
+    private val context: Context,
+    private val fileManager: FileManager
 ) : AudioRecorder {
     private var recorder: MediaRecorder? = null
 
@@ -19,8 +20,7 @@ class AudioRecorderImpl(
 
     override fun start(fileName: String): String {
         val extension = ".mp3"
-//        val file = File(context.filesDir, "$fileName$extension").absolutePath
-        val filePath = File.createTempFile("$fileName-", extension).absolutePath
+        val filePath = fileManager.createTempFile("$fileName-", extension).absolutePath
         recorder = createRecorder().apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
