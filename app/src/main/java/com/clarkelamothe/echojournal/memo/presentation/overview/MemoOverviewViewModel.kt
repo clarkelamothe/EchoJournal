@@ -223,7 +223,6 @@ class MemoOverviewViewModel(
         voiceRecorderState.update { voiceRecorderState ->
             with(RecordingState.Paused) {
                 voiceRecorderState.copy(
-                    showBottomSheet = true,
                     state = this,
                     title = getTitle()
                 )

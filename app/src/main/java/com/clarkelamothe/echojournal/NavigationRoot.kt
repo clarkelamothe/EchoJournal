@@ -15,6 +15,7 @@ import com.clarkelamothe.echojournal.memo.presentation.create.CreateMemoViewMode
 import com.clarkelamothe.echojournal.memo.presentation.overview.MemoOverviewScreenRoot
 import com.clarkelamothe.echojournal.memo.presentation.overview.MemoOverviewViewModel
 import com.clarkelamothe.echojournal.memo.presentation.settings.SettingsScreenRoot
+import com.clarkelamothe.echojournal.memo.presentation.settings.SettingsViewModel
 
 @Composable
 fun NavigationRoot(
@@ -77,10 +78,19 @@ fun NavigationRoot(
 
             composable<Routes.Settings> {
                 SettingsScreenRoot(
+                    viewModel = viewModel<SettingsViewModel>(
+                        factory = viewModelFactory {
+                            SettingsViewModel(
+                                MemoModule.settingsRepository,
+                                MemoModule.voiceMemoRepository
+                            )
+                        }
+                    ),
                     onBackClick = {
                         navController.navigateUp()
-                    }
-                )
+                    },
+
+                    )
             }
         }
     }
