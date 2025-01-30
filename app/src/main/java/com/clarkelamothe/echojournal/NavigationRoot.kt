@@ -63,7 +63,8 @@ fun NavigationRoot(
                         CreateMemoViewModel(
                             filePath,
                             MemoModule.player(context),
-                            MemoModule.voiceMemoRepository
+                            MemoModule.voiceMemoRepository,
+                            MemoModule.settingsRepository
                         )
                     }
                 )

@@ -13,9 +13,11 @@ import com.clarkelamothe.echojournal.EchoJournalApp
 import com.clarkelamothe.echojournal.core.domain.VoiceMemo
 import com.clarkelamothe.echojournal.core.presentation.designsystem.PlayerState
 import com.clarkelamothe.echojournal.core.presentation.ui.mappers.toBM
+import com.clarkelamothe.echojournal.core.presentation.ui.mappers.toVM
 import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
 import com.clarkelamothe.echojournal.memo.domain.AudioPlayer
 import com.clarkelamothe.echojournal.memo.domain.FileManager
+import com.clarkelamothe.echojournal.memo.domain.SettingsRepository
 import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
 import com.clarkelamothe.echojournal.memo.presentation.formatDuration
 import kotlinx.coroutines.channels.Channel
@@ -39,6 +41,7 @@ class CreateMemoViewModel(
     private val filePath: String,
     private val audioPlayer: AudioPlayer,
     private val repository: VoiceMemoRepository,
+    private val settingsRepository: SettingsRepository,
     private val fileManager: FileManager = EchoJournalApp.fileManager
 ) : ViewModel() {
     private val eventChannel = Channel<CreateMemoEvent>()
@@ -56,6 +59,17 @@ class CreateMemoViewModel(
     init {
         audioPlayer.init(filePath = filePath)
         setAudioDuration()
+
+        settingsRepository.get()
+            .onEach {
+                memoState.update { memoState ->
+                    memoState.copy(
+                        mood = it.mood?.toVM(),
+                        topics = it.topics
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
 
         combine(
             showBottomSheet,

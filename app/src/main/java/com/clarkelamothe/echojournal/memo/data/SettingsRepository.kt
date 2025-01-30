@@ -5,6 +5,8 @@ import com.clarkelamothe.echojournal.core.database.SettingsDao
 import com.clarkelamothe.echojournal.core.domain.Settings
 import com.clarkelamothe.echojournal.memo.domain.SettingsRepository
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 class SettingsRepositoryImpl(
@@ -13,5 +15,9 @@ class SettingsRepositoryImpl(
 ) : SettingsRepository {
     override suspend fun save(settings: Settings) = withContext(ioDispatcher) {
         settingsDao.upsert(settings.toDM())
+    }
+
+    override fun get(): Flow<Settings> {
+        return settingsDao.getSettings().map { it.toBM() }
     }
 }
