@@ -206,7 +206,7 @@ class MemoOverviewViewModel(
         voiceRecorderState.update { VoiceRecorderState(showBottomSheet = show) }
     }
 
-    private fun startRecording() {
+    fun startRecording() {
         onStartTimer(true)
         voiceRecorderState.update {
             it.copy(
@@ -223,6 +223,7 @@ class MemoOverviewViewModel(
         voiceRecorderState.update { voiceRecorderState ->
             with(RecordingState.Paused) {
                 voiceRecorderState.copy(
+                    showBottomSheet = true,
                     state = this,
                     title = getTitle()
                 )

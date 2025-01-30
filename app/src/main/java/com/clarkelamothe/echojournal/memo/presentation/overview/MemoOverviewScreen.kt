@@ -33,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -82,16 +83,24 @@ import java.time.LocalTime
 @Composable
 fun MemoOverviewScreenRoot(
     viewModel: MemoOverviewViewModel,
+    autoRecord: Boolean,
     onSettingsClick: () -> Unit,
     onVoiceMemoRecorded: (filePath: String) -> Unit
 ) {
     val context = LocalContext.current
+    val state = viewModel.state
 
     var audioPermissionGranted by remember { mutableStateOf(false) }
     val audioPermissionResultLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         audioPermissionGranted = isGranted
+    }
+
+    LaunchedEffect(autoRecord) {
+        if (autoRecord) {
+            viewModel.showBottomSheet(true)
+        }
     }
 
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {

@@ -18,7 +18,8 @@ import com.clarkelamothe.echojournal.memo.presentation.settings.SettingsScreenRo
 
 @Composable
 fun NavigationRoot(
-    navController: NavHostController
+    navController: NavHostController,
+    autoRecord: Boolean
 ) {
     NavHost(
         navController = navController,
@@ -42,6 +43,7 @@ fun NavigationRoot(
 
                 MemoOverviewScreenRoot(
                     viewModel = viewModel,
+                    autoRecord = autoRecord,
                     onSettingsClick = {
                         navController.navigate(Routes.Settings)
                     },

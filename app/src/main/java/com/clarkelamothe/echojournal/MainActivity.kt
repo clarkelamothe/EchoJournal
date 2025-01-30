@@ -11,11 +11,15 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val cameFromWidget = intent.extras?.getBoolean("WIDGET") ?: false
+
         setContent {
             EchoJournalTheme {
                 val navController = rememberNavController()
 
                 NavigationRoot(
+                    autoRecord = cameFromWidget,
                     navController = navController
                 )
             }
