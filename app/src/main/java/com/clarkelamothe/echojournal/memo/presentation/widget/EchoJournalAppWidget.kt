@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.glance.ExperimentalGlanceApi
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.ImageProvider
@@ -31,7 +30,6 @@ class EchoJournalAppWidget : GlanceAppWidget() {
     override val sizeMode: SizeMode
         get() = SizeMode.Single
 
-    @OptIn(ExperimentalGlanceApi::class)
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
             Box(
