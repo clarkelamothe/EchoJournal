@@ -77,6 +77,7 @@ class MemoOverviewViewModel(
             val voiceMemos = filteredVoiceMemos(selectedMoods, selectedTopics, memos)
 
             state = state.copy(
+                showEmptyState = memos.isEmpty(),
                 moodChipLabel = filterState.moodLabel(selectedMoods),
                 topicChipLabel = filterState.topicsLabel(
                     selectedTopics,
