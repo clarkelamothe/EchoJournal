@@ -22,7 +22,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -95,13 +94,6 @@ fun SettingsScreen(
             mutableStateOf(false)
         }
 
-        var selectedMood by remember {
-            mutableStateOf(initialSettings.moodVM)
-        }
-        val selectedTopics = remember {
-            mutableStateListOf(initialSettings.topics)
-        }
-
         val topicInput = remember {
             TextFieldState(initialText = inputText)
         }
@@ -153,9 +145,8 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(14.dp))
                 MoodsRow(
                     modifier = Modifier.fillMaxWidth(),
-                    selectedMood = selectedMood,
+                    selectedMood = initialSettings.moodVM,
                     onSelectMood = { mood ->
-                        selectedMood = mood
                         onAction(SettingsScreenAction.OnMoodSelect(mood))
                     }
                 )

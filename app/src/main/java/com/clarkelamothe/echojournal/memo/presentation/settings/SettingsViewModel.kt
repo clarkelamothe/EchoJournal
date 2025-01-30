@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clarkelamothe.echojournal.core.presentation.ui.mappers.toVM
 import com.clarkelamothe.echojournal.core.presentation.ui.model.MoodVM
 import com.clarkelamothe.echojournal.memo.domain.SettingsRepository
 import com.clarkelamothe.echojournal.memo.domain.VoiceMemoRepository
@@ -18,9 +19,10 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class SettingsViewModel(
-    settingsRepository: SettingsRepository,
+    private val settingsRepository: SettingsRepository,
     voiceRepository: VoiceMemoRepository
 ) : ViewModel() {
     var state by mutableStateOf(SettingsState())
@@ -32,21 +34,28 @@ class SettingsViewModel(
     private val topicInput = MutableStateFlow("")
 
     init {
+        settingsRepository.get()
+            .onEach { setting ->
+                topics.update { setting.topics }
+                mood.update {
+                    setting.mood?.toVM()
+                }
+            }
+            .launchIn(viewModelScope)
+
         combine(
             mood,
             topics,
             suggestions
         ) { mood, topics, suggestions ->
+            val settings = state.settings
             state = state.copy(
-                settings = SettingsVM(
+                settings = settings.copy(
                     moodVM = mood,
-                    topics = topics.sorted()
+                    topics = topics
                 ),
-                suggestions = suggestions.sorted()
-            )
-
-            settingsRepository.save(
-                state.settings.toBM()
+                suggestions = suggestions.sorted(),
+                dropdownExpanded = suggestions.isNotEmpty()
             )
         }.launchIn(viewModelScope)
 
@@ -72,17 +81,18 @@ class SettingsViewModel(
                 topics.update {
                     it.plus(action.topic).distinct()
                 }
+                saveSettings()
             }
 
             is SettingsScreenAction.OnMoodSelect -> {
                 mood.update { action.mood }
+                saveSettings()
             }
 
             is SettingsScreenAction.OnInputTopic -> {
-                state = state.copy(
-                    inputText = action.text.toString(),
-                    dropdownExpanded = action.text.length >= 2
-                )
+                topicInput.update {
+                    action.text.toString()
+                }
             }
 
             is SettingsScreenAction.OnRemoveTopic -> {
@@ -91,11 +101,20 @@ class SettingsViewModel(
                     list.removeAt(action.index)
                     list
                 }
+                saveSettings()
             }
 
             else -> {
                 /* No-Op */
             }
+        }
+    }
+
+    private fun saveSettings() {
+        viewModelScope.launch {
+            settingsRepository.save(
+                state.settings.toBM()
+            )
         }
     }
 }
