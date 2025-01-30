@@ -190,6 +190,7 @@ class CreateMemoViewModel(
 
             CreateMemoAction.OnSaveClick -> {
                 audioPlayer.stop()
+                observeElapseTime.update { false }
                 player.update { it.copy(state = PlayerState.Idle) }
 
                 viewModelScope.launch {

@@ -211,6 +211,7 @@ fun TopicSelectionAlternate(
                     isSelected = suggestion in initialTopics,
                     item = suggestion,
                     onSelect = {
+                        onAddTopic(textFieldState.text.toString())
                         textFieldState.clearText()
                     },
                     leadingIcon = {
@@ -229,7 +230,7 @@ fun TopicSelectionAlternate(
                 )
             }
 
-            if (textFieldState.text !in suggestions) {
+            if (textFieldState.text !in suggestions || suggestions.isNotEmpty()) {
                 DropdownItem(
                     isSelected = false,
                     item = stringResource(R.string.create, textFieldState.text),

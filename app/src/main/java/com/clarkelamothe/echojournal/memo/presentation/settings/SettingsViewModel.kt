@@ -46,8 +46,9 @@ class SettingsViewModel(
         combine(
             mood,
             topics,
-            suggestions
-        ) { mood, topics, suggestions ->
+            suggestions,
+            topicInput
+        ) { mood, topics, suggestions, topicInput->
             val settings = state.settings
             state = state.copy(
                 settings = settings.copy(
@@ -55,7 +56,7 @@ class SettingsViewModel(
                     topics = topics
                 ),
                 suggestions = suggestions.sorted(),
-                dropdownExpanded = suggestions.isNotEmpty()
+                dropdownExpanded = topicInput.length >= 2
             )
         }.launchIn(viewModelScope)
 
@@ -65,8 +66,8 @@ class SettingsViewModel(
                     voiceRepository.filterTopics(it)
                 } else flowOf()
             }
-            .onEach {
-                suggestions.update { it }
+            .onEach { topics ->
+                suggestions.update { topics }
             }
             .launchIn(viewModelScope)
     }
